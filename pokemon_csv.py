@@ -36,3 +36,9 @@ natures.set_index("nature", inplace = True)
 
 moves = pd.read_csv("pokemon_moves.csv")
 moves.set_index("Name", inplace = True)
+
+types = df[["species", "type1", "type2"]]
+types.set_index("species", inplace = True)
+
+type_effectiveness = pd.read_csv("type_effectiveness.csv")
+type_effectiveness.set_index("Attacking", inplace = True)

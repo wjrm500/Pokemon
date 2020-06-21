@@ -2,6 +2,8 @@ import time
 import sys
 
 def dprint(string):
+    if isinstance(string, list):
+        string = " ".join(string)
     for char in string:
         sys.stdout.write(char)
         sys.stdout.flush()

@@ -20,6 +20,7 @@ def get_tag_child_by_str(tag, string):
             return index
 
 def get_moves_from_html_indexes(soup, li):
+    moves = []
     lists = []
     a = soup
     for index, value in enumerate(li):
@@ -29,9 +30,11 @@ def get_moves_from_html_indexes(soup, li):
     for child in list(a.children):
         level = int(list(child.children)[0].get_text())
         move = list(child.children)[1].get_text()
+        moves.append(move)
         lists.append([level, move])
-    return lists
+    return moves, lists
 
+all_moves = []
 species_list = list(df["species"])
 name_url_mapping = {
     "Nidoran♀": "nidoran-f",
@@ -48,12 +51,19 @@ for index, species in enumerate(species_list):
     page = requests.get("https://pokemondb.net/pokedex/{}#dex-moves".format(species))
     soup = BeautifulSoup(page.content, "html.parser")
     try:
-        lists = get_moves_from_html_indexes(soup, [2, 3, 9, "Placeholder", 3, 1, 1, 1, 4, 0, 1])
+        moves, lists  = get_moves_from_html_indexes(soup, [2, 3, 9, "Placeholder", 3, 1, 1, 1, 4, 0, 1])
     except:
-        lists = get_moves_from_html_indexes(soup, [2, 3, 9, "Placeholder", 3, 1, 1, 1, 4, 3, 0, 0, 0, 1])
+        moves, lists = get_moves_from_html_indexes(soup, [2, 3, 9, "Placeholder", 3, 1, 1, 1, 4, 3, 0, 0, 0, 1])
     print(index, species, lists)
+    all_moves.append(moves)
     moves_dict[species] = pd.DataFrame(lists, columns = ["level", "move"])
+
+all_moves = list(set([move for moves in all_moves for move in moves]))
 
 pickle_out = open("moves_dict.pickle", "wb")
 pickle.dump(moves_dict, pickle_out)
+pickle_out.close()
+
+pickle_out = open("all_moves.pickle", "wb")
+pickle.dump(all_moves, pickle_out)
 pickle_out.close()

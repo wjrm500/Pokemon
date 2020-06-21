@@ -12,9 +12,9 @@ pickle_in = open("move_details.pickle", "rb")
 move_details = pickle.load(pickle_in)
 pickle_in.close()
 
-class Attack():
+class TakeTurn():
     def display_options(attacking_player):
-        attacking_pokemon = attacking_player.pokemon[0]
+        attacking_pokemon = attacking_player.active_pokemon
         dprint("Your Lv. {} {} has the following {} moves...".format(attacking_pokemon.level, attacking_pokemon.species, len(attacking_pokemon.moves)))
         print("")
         nums = list(range(1, 5))
@@ -96,3 +96,20 @@ class Attack():
             print("({})".format(nums.pop()),
                 move.ljust(max_move_len),
                 "      Effect: ", move_details[move]["effect"])
+
+    def attempt_to_flee(escapee, guard, flee_attempts):
+        if escapee.get_stat("speed") > guard.get_stat("speed"): # Player Pokemon is faster than opposing Pokemon
+            dprint("{} ({}) fled!".format(escapee.name, escapee.species))
+            #self.flee()
+        else: # Player Pokemon is slower than opposing Pokemon
+            A = escapee.get_stat("speed")
+            B = guard.get_stat("speed")
+            C = flee_attempts
+            F = (((A * 128) / B) + 30 * C) % 256
+            randnum = random.randint(0, 255)
+            if randnum < F:
+                dprint("{} ({}) fled!".format(escapee.name, escapee.species))
+                #self.flee()
+            else:
+                dprint("{} ({}) tried to flee, but was caught in the act!".format(escapee.name, escapee.species))
+                self.battle_stats["flee_attempts"] += 1

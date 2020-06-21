@@ -19,6 +19,6 @@ def final_comma_ampersand(l):
         if last_comma_index != -1:
             return l[:last_comma_index] + " &" + l[last_comma_index + 1:]
         else:
-            return ""
+            return str(l)
     else:
-        return l
+        pass

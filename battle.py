@@ -1,38 +1,37 @@
 from funcs import dprint
+import numpy as np
 
-### Change so from perspective of owner
+class Battle():
+    def __init__(self):
+        self.battle_intro()
 
-def battle(player, npc):
-    dprint("-" * 50)
-    dprint("IT'S BATTLE TIME")
-    dprint("-" * 50)
+    def battle_intro(self):
+        dprint("-" * 50)
+        dprint("IT'S BATTLE TIME")
+        dprint("-" * 50)
 
-    player_pokemon = player.pokemon[0]
-    npc_pokemon = npc.pokemon[0]
-    for i, j in zip([player, npc], [player_pokemon, npc_pokemon]):
-        dprint("{} sent out {}!".format(i.name, j.name))
-    speed_text = "{} ({}) has the speed advantage and will strike first!"
-    print(speed_text.format(player_pokemon.name, player_pokemon.species) if player_pokemon.get_stat("speed") >= npc_pokemon.get_stat("speed") else speed_text.format(npc_pokemon.name, npc_pokemon.species))
-    while player_pokemon.health > 0 and npc_pokemon.health > 0:
-        if player_pokemon.get_stat("speed") >= npc_pokemon.get_stat("speed"):
+    def battle(player, npc):
+        def speed_check():
+            global player_pokemon, npc_pokemon
+            player_pokemon, npc_pokemon = player.active_pokemon, npc.active_pokemon
+            global player_go_first
+            player_go_first = True if player_pokemon.get_stat("speed") >= npc_pokemon.get_stat("speed") else False
+        speed_check()
+        for i, j in zip([player, npc], [player_pokemon, npc_pokemon]):
+            dprint("{} sent out {}!".format(i.name, j.name))
+        speed_text = "{} ({}) has the speed advantage, which means {} will go first!"
+        print(speed_text.format(player_pokemon.name, player_pokemon.species, player.name) if player_go_first else speed_text.format(npc_pokemon.name, npc_pokemon.species, npc.name))
+        def all_pokemon_fainted():
+            return np.sum([pokemon.health for pokemon in player.party]) == 0 or np.sum([pokemon.health for pokemon in npc.party]) == 0
+        while not all_pokemon_fainted():
+            speed_check()
+            a, b = [player, npc] if player_go_first else [npc, player]
             input()
-            player_pokemon.attack(npc_pokemon)
-            if npc_pokemon.health == 0:
+            a.take_turn(b)
+            if all_pokemon_fainted():
                 break
             input()
-            npc_pokemon.attack(player_pokemon)
-        else:
-            input()
-            npc_pokemon.attack(player_pokemon)
-            if player_pokemon.health == 0:
-                break
-            input()
-            player_pokemon.attack(npc_pokemon)
-    if player_pokemon.health <= 0:
-        winner = npc
-        dprint("{} fainted! {} won the battle!".format(player_pokemon.name, winner.name))
-    else:
-        winner = player
-        dprint("{} fainted! {} won the battle!".format(npc_pokemon.name, winner.name))
-
-    return winners
+            b.take_turn(a)
+        winner = npc if np.sum([pokemon.health for pokemon in player.party]) == 0 else player
+        dprint("{} won the battle!".format(winner.name))
+        return winner

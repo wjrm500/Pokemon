@@ -2,8 +2,9 @@ from player import Player
 from pokemon import Pokemon
 from npc import NPC
 from funcs import dprint, final_comma_ampersand
-from battle import battle
+from battle import Battle
 import random
+import sys
 
 # dprint("""
 # You wake up bound, gagged and tied by the wrists to a steel bedframe in a dark, dingy room.
@@ -32,7 +33,7 @@ import random
 #     old_man.speak("Ooh, one of those are you. Ah well, times change!")
 # dprint("The old man fumbles in his pocket for a few seconds, before drawing out three small orbs.")
 # pokemon_options = {"A": "Bulbasaur", "B": "Charmander", "C": "Squirtle"}
-# old_man.speak("Three wonderful Pokemon are imprisoned within these orbs: {}. Which one would you like?".format(final_comma_ampersand(pokemon_options)))
+# old_man.speak("Three wonderful Pokemon are imprisoned within these Pokeballs: {}. Which one would you like?".format(final_comma_ampersand(pokemon_options)))
 # for alphabet, pokemon in pokemon_options.items():
 #     dprint(alphabet + " - " + pokemon)
 # while True:
@@ -63,10 +64,13 @@ p.set_gender("Male")
 real_choice = "Bulbasaur"
 starter_name = "Paul"
 
-p.pokemon.append(Pokemon(species = real_choice, name = starter_name, owner = p))
-dprint("{} pocketed the orb containing {} the {}.".format(p.name, p.pokemon[0].name, p.pokemon[0].species))
-starter_pronoun = "He" if p.pokemon[0].gender == "Male" else "She"
-old_man.speak("{} should serve you well. {}'s a {} little fellow!".format(p.pokemon[0].name, starter_pronoun, p.pokemon[0].nature.lower()))
+p.add_pokemon(Pokemon(species = real_choice, name = starter_name, owner = p))
+p.add_pokemon(Pokemon(species = "Mewtwo", name = "Psycho", level = 100, owner = p))
+p.add_pokemon(Pokemon(species = "Gloom", name = "Jim", level = 43, owner = p))
+p.add_pokemon(Pokemon(species = "Dragonite", name = "Bugeye", level = 100, owner = p))
+p.add_pokemon(Pokemon(species = "Pikachu", name = "Kardashian", level = 28, owner = p))
+dprint("{} pockets the orb containing {} the {}.".format(p.name, p.active_pokemon.name, p.active_pokemon.species))
+old_man.speak("{} should serve you well. It's a {} little fellow!".format(p.active_pokemon.name, p.active_pokemon.nature.lower()))
 
 ### RIVAL ARRIVES
 
@@ -78,7 +82,7 @@ rival_starter_mapping = {
 "Charmander": "Squirtle",
 "Squirtle": "Bulbasaur"
 }
-rival_starter = rival_starter_mapping[p.pokemon[0].species]
+rival_starter = rival_starter_mapping[p.active_pokemon.species]
 Pokemon(species = rival_starter, name = "Scunt", owner = rival)
 rival.add_pokemon(Pokemon(species = rival_starter, name = "Scunt", owner = rival))
 old_man.speak("Ah, I see {} has arrived!".format(rival.name))
@@ -88,12 +92,35 @@ rival.speak("Fight?")
 dprint("Input \"Yes\" or \"No\":")
 fight_choice = input()
 if fight_choice.lower() in ["yes", "y"]:
-    winner = battle(p, rival)
+    winner = Battle.battle(p, rival)
 else:
     rival.speak("You great namby-pamby!")
     dprint("The old man shakes his head sadly and pulls the ropes that previously bound you to the bedframe from his pocket.")
     old_man.speak("{}, hold him still would you?".format(rival.name))
+    dprint("GAME OVER.")
+    sys.exit()
 if p == winner:
-    rival.speak("Hoisted on my own petard! Well won, {}. Until next time!".format(p.name))
+    rival.speak("Hoisted on my own petard! You're not quite as retarded as you look, {}. Until next time!".format(p.name))
+    dprint("{} hitches up his trousers, which had fallen down during the battle, and blunders out of the room.".format(rival.name))
+    old_man.speak("Well done {}! That'll show Johnson. Ha!".format(p.name))
 elif rival == winner:
     rival.speak("Ha-ha! I won!")
+    dprint("{} grabs the unconscious {} by the scruff of its neck, swings it around his head, and launches it out of the open window.".format(rival.name, p.active_pokemon.species))
+    rejected_pokemon = p.party.pop()
+    rival.speak("Better luck next time, loser!")
+    dprint("{} hitches up his trousers, which had fallen down during the battle, and blunders out of the room.".format(rival.name))
+    old_man.speak("Classic Johnson! Don't worry about {}, we'll find you another {}.".format(p.active_pokemon.name, p.active_pokemon.species))
+    dprint("The old man fumbles in his other pocket and hands you a new Pokeball.")
+    old_man.speak("What are you going to call this one?")
+    while True:
+        dprint("Name your {}:".format(real_choice))
+        starter_name = input()
+        if len(starter_name) >= 2 and len(starter_name) <= 15 and starter_name.isalpha():
+            break
+        elif starter_name.lower().strip() == rejected_pokemon.name.lower().strip():
+            old_man.speak("That's imaginative isn't it! Choose a new name, for heaven's sake.")
+        else:
+            old_man.speak("Being known only as \"Old Man\", I'm hardly an expert on the subject of names, but come up with a proper name would you?!")
+    p.add_pokemon(Pokemon(species = real_choice, name = starter_name, owner = p))
+    dprint("{} pockets the orb containing {} the {}.".format(p.name, p.active_pokemon.name, p.active_pokemon.species))
+    old_man.speak("Let's hope {} serves you better than {}. This one's a bit more {}!".format(p.active_pokemon.name, rejected_pokemon.name, p.active_pokemon.nature.lower()))

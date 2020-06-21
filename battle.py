@@ -1,5 +1,7 @@
 from funcs import dprint
 
+### Change so from perspective of owner
+
 def battle(player, npc):
     dprint("-" * 50)
     dprint("IT'S BATTLE TIME")

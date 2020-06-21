@@ -1,10 +1,10 @@
-from inventory import Inventory
+from funcs import dprint
 
 class Player():
     def __init__(self, name):
         self.name = name.capitalize()
         self.location = "home"
-        self.inventory = Inventory()
+        self.inventory = {"Pokeball": 1, "Potion": 1}
         self.pokemon = []
 
     def set_gender(self, gender):
@@ -27,4 +27,19 @@ class Player():
             pokemon.display()
 
     def display_inventory(self):
-        self.inventory.display()
+        dprint("Your bag contains the following items...")
+        for item, quantity in self.inventory.items():
+            dprint("{} x {}".format(quantity, item))
+
+    def switch_pokemon(self):
+        if len(self.pokemon) > 1:
+            choice_mapping = {}
+            for index, poke in enumerate(self.pokemon):
+                dprint("({}) {} ({})".format(index + 1, poke.name, poke.species))
+                choice_mapping[str(index + 1)] = poke
+            dprint("Which Pokemon would you like to switch in?")
+            choice = input()
+            chosen_pokemon = choice_mapping[choice]
+            self.pokemon.insert(0, self.pokemon.pop(chosen_pokemon))
+        else:
+            dprint("You only have one Pokemon in your party!")

@@ -30,10 +30,24 @@ class Pokemon():
         self.health = self.get_stat("hp")
         self.growth_pattern = growth_patterns.loc[self.species][0]
         self.exp = exp_by_level.loc[self.level, self.growth_pattern]
-        df = moves_dict[self.species]
-        moves_list = list(df[df["level"] <= self.level]["move"].tail(4))
-        self.moves = {move: move_details[move]["pp"] for move in moves_list} # TODO Ensure at least one attacking move is available
         self.types = [x.capitalize() for x in list(types.loc[self.species]) if str(x) != "nan"]
+        self.fainted = False
+        self.guarantee_attacking_move()
+
+    def guarantee_attacking_move(self):
+        df = moves_dict[self.species]
+        df = df[df["level"] <= self.level].copy()
+        def damage_dealing(move):
+            if move_details[move]["power"] != "NA":
+                return 1
+            else:
+                return 0
+        df["damage_dealing"] = df["move"].apply(damage_dealing)
+        damaging_df = df[df["damage_dealing"] == 1]
+        best_damaging_move = df.iloc[damaging_df.last_valid_index()]["move"]
+        other_moves = df[df["move"] != best_damaging_move]["move"].tail(3)
+        self.moves = {best_damaging_move: move_details[best_damaging_move]["pp"]}
+        self.moves.update({move: move_details[move]["pp"] for move in list(other_moves)})
 
     def get_stat(self, stat):
         return self.stats[stat]
@@ -44,6 +58,13 @@ class Pokemon():
     def display(self):
         dprint(self.name, " the ", self.species, " Lv. ", self.level)
 
+    def faint(self):
+        self.fainted = True
+        dprint("{} ({}) fainted!".format(self.name, self.species))
+
 class WildPokemon(Pokemon):
     def take_turn(self):
         pass
+
+a = Pokemon("Blastoise", name = "Graham", owner = "Will", level = 50)
+b = Pokemon("Vileplume", name = "Jim", owner = "Will", level = 57)

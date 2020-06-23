@@ -37,7 +37,7 @@ import sys
 # for alphabet, pokemon in pokemon_options.items():
 #     dprint(alphabet + " - " + pokemon)
 # while True:
-#     dprint("Input A, B or C.")
+#     dprint("Input A, B or C:")
 #     starter_choice = input().upper()
 #     if starter_choice in pokemon_options.keys():
 #         break
@@ -64,11 +64,9 @@ p.set_gender("Male")
 real_choice = "Bulbasaur"
 starter_name = "Paul"
 
-p.add_pokemon(Pokemon(species = real_choice, name = starter_name, owner = p))
-p.add_pokemon(Pokemon(species = "Mewtwo", name = "Psycho", level = 100, owner = p))
-p.add_pokemon(Pokemon(species = "Gloom", name = "Jim", level = 43, owner = p))
-p.add_pokemon(Pokemon(species = "Dragonite", name = "Bugeye", level = 100, owner = p))
-p.add_pokemon(Pokemon(species = "Pikachu", name = "Kardashian", level = 28, owner = p))
+starter_pokemon = Pokemon(species = real_choice, name = starter_name, owner = p)
+p.add_pokemon(starter_pokemon)
+# p.add_pokemon(Pokemon(species = "Muk", name = "Jim", level = 43, owner = p))
 dprint("{} pockets the orb containing {} the {}.".format(p.name, p.active_pokemon.name, p.active_pokemon.species))
 old_man.speak("{} should serve you well. It's a {} little fellow!".format(p.active_pokemon.name, p.active_pokemon.nature.lower()))
 
@@ -83,8 +81,8 @@ rival_starter_mapping = {
 "Squirtle": "Bulbasaur"
 }
 rival_starter = rival_starter_mapping[p.active_pokemon.species]
-Pokemon(species = rival_starter, name = "Scunt", owner = rival)
-rival.add_pokemon(Pokemon(species = rival_starter, name = "Scunt", owner = rival))
+rival.add_pokemon(Pokemon(species = rival_starter, name = "Scunt", owner = rival, level = 20))
+# rival.add_pokemon(Pokemon(species = "Blastoise", name = "Bastard", owner = rival, level = 74))
 old_man.speak("Ah, I see {} has arrived!".format(rival.name))
 # dprint("You've never met this {} fellow, but there's something about him you don't like.".format(rival.name))
 # rival.speak("We meet at last {}. I've been waiting for this moment for quite some time. Are you ready to FIGHT?!".format(p.name))
@@ -105,22 +103,23 @@ if p == winner:
     old_man.speak("Well done {}! That'll show Johnson. Ha!".format(p.name))
 elif rival == winner:
     rival.speak("Ha-ha! I won!")
-    dprint("{} grabs the unconscious {} by the scruff of its neck, swings it around his head, and launches it out of the open window.".format(rival.name, p.active_pokemon.species))
-    rejected_pokemon = p.party.pop()
+    dprint("{} grabs the unconscious {} by the scruff of its neck, swings it around his head, and launches it out of the open window.".format(rival.name, starter_pokemon.species))
+    rejected_pokemon = p.party.pop(p.party.index(starter_pokemon))
     rival.speak("Better luck next time, loser!")
     dprint("{} hitches up his trousers, which had fallen down during the battle, and blunders out of the room.".format(rival.name))
-    old_man.speak("Classic Johnson! Don't worry about {}, we'll find you another {}.".format(p.active_pokemon.name, p.active_pokemon.species))
+    old_man.speak("Classic Johnson! Don't worry about {}, we'll find you another {}.".format(starter_pokemon.name, starter_pokemon.species))
     dprint("The old man fumbles in his other pocket and hands you a new Pokeball.")
     old_man.speak("What are you going to call this one?")
     while True:
         dprint("Name your {}:".format(real_choice))
         starter_name = input()
-        if len(starter_name) >= 2 and len(starter_name) <= 15 and starter_name.isalpha():
-            break
-        elif starter_name.lower().strip() == rejected_pokemon.name.lower().strip():
+        if starter_name.lower().strip() == rejected_pokemon.name.lower().strip():
             old_man.speak("That's imaginative isn't it! Choose a new name, for heaven's sake.")
+        elif len(starter_name) >= 2 and len(starter_name) <= 15 and starter_name.isalpha():
+            break
         else:
             old_man.speak("Being known only as \"Old Man\", I'm hardly an expert on the subject of names, but come up with a proper name would you?!")
-    p.add_pokemon(Pokemon(species = real_choice, name = starter_name, owner = p))
-    dprint("{} pockets the orb containing {} the {}.".format(p.name, p.active_pokemon.name, p.active_pokemon.species))
-    old_man.speak("Let's hope {} serves you better than {}. This one's a bit more {}!".format(p.active_pokemon.name, rejected_pokemon.name, p.active_pokemon.nature.lower()))
+    new_starter_pokemon = Pokemon(species = real_choice, name = starter_name, owner = p)
+    p.add_pokemon(new_starter_pokemon)
+    dprint("{} pockets the orb containing {} the {}.".format(p.name, new_starter_pokemon.name, new_starter_pokemon.species))
+    old_man.speak("Let's hope {} serves you better than {}. This one's a bit more {}!".format(new_starter_pokemon.name, rejected_pokemon.name, new_starter_pokemon.nature.lower()))

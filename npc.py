@@ -18,6 +18,7 @@ class NPC():
         self.name = name
         self.location = location
         self.party = []
+        self.fainted_pokemon = []
 
     def add_pokemon(self, pokemon):
         self.party.append(pokemon)
@@ -32,4 +33,12 @@ class NPC():
             TakeTurn.deal_damage(self.active_pokemon, opponent.active_pokemon, mapped_choice)
         else: # Pokemon move does not deal damage
             dprint("{} ({}) played a move that does not deal damage.".format(self.active_pokemon.name, self.active_pokemon.species))
+            pass
+
+    def handle_faint(self):
+        if len(self.party) > 1:
+            self.active_pokemon.faint()
+            self.active_pokemon = [pokemon for pokemon in self.party if not pokemon.fainted][0]
+            dprint("{} switched in {} ({})!".format(self.name, self.active_pokemon.name, self.active_pokemon.species))
+        else:
             pass

@@ -5,8 +5,8 @@ from pokemon import WildPokemon
 import numpy as np
 import pdb
 
-pickle_in = open("moves_dict.pickle", "rb")
-moves_dict = pickle.load(pickle_in)
+pickle_in = open("moves_by_level.pickle", "rb")
+moves_by_level = pickle.load(pickle_in)
 pickle_in.close()
 
 pickle_in = open("move_details.pickle", "rb")
@@ -19,7 +19,6 @@ class Player():
         self.location = "home"
         self.inventory = {"Pokeball": 1, "Potion": 1}
         self.party = []
-        self.fainted_pokemon = []
 
     def add_pokemon(self, pokemon):
         self.party.append(pokemon)
@@ -49,7 +48,7 @@ class Player():
         for item, quantity in self.inventory.items():
             dprint("{} x {}".format(quantity, item))
 
-    def switch_pokemon(self, type = "voluntary"):
+    def switch_pokemon(self, battle, type = "voluntary"):
         while True:
             try:
                 if len([pokemon for pokemon in self.party[1:] if not pokemon.fainted]) > 0:
@@ -63,12 +62,14 @@ class Player():
                             " {} ({})".format(pokemon.name, pokemon.species).ljust(max_name_len),
                             "      Level: ", str(pokemon.level).ljust(max_level_len),
                             "      Type(s): ", final_comma_ampersand(pokemon.types).ljust(max_types_len),
-                            "      HP remaining: ", int(pokemon.health), "/", int(pokemon.get_stat("hp")))
+                            "      HP remaining: ", pokemon.get_health(), "/", pokemon.get_stat("hp", type = "perm"))
                         choice_mapping[index + 1] = pokemon
                     choice = int(input())
                     chosen_pokemon = choice_mapping[choice]
                     self.party.insert(0, self.party.pop(self.party.index(chosen_pokemon)))
                     self.active_pokemon = self.party[0]
+                    if self.active_pokemon not in battle.participants:
+                        battle.participants.append(self.active_pokemon)
                     dprint("{} switched in {}!".format(self.name, self.active_pokemon.name))
                     return "switched"
                 else:
@@ -81,11 +82,11 @@ class Player():
             except:
                 dprint("You must select one of the available options.")
 
-    def handle_faint(self):
-        self.active_pokemon.faint()
-        self.switch_pokemon(type = "enforced")
+    def handle_faint(self, battle):
+        battle.participants.remove(self.active_pokemon)
+        self.switch_pokemon(battle, type = "enforced")
 
-    def take_turn(self, opponent):
+    def take_turn(self, opponent, battle):
         while True:
             while True:
                 try:
@@ -95,13 +96,20 @@ class Player():
                     dprint("You must select one of the available options.")
                     input()
             if choice.isnumeric(): # Player selected Pokemon move
-                if move_details[mapped_choice]["power"] != "NA": # Pokemon move deals damage
-                    TakeTurn.deal_damage(self.active_pokemon, opponent.active_pokemon, mapped_choice)
-                else: # Pokemon move does not deal damage
-                    dprint("{} ({}) played a move that does not deal damage.".format(self.active_pokemon.name, self.active_pokemon.species))
-                    pass
-                    # TODO Consider non-attacking moves - need battle-specific stats that get reset. Where to store all moves?
-                break
+                if np.sum([move["temp"] for move in self.active_pokemon.moves.values()]) == 0: # All moves have zero PP
+                    dprint("All of {}'s moves are out of PP!".format(self.active_pokemon.species))
+                else: # At least one move has PP remaining
+                    if self.active_pokemon.moves[mapped_choice]["temp"] == 0: # Chosen move has zero PP
+                        dprint("{} has no PP remaining! Choose another move.".format(mapped_choice))
+                    else: # Chosen move has PP remaining
+                        if move_details[mapped_choice]["power"] != "NA": # Pokemon move deals damage
+                            TakeTurn.deal_damage(self.active_pokemon, opponent.active_pokemon, mapped_choice)
+                        else: # Pokemon move does not deal damage
+                            dprint("{} ({}) played a move that does not deal damage.".format(self.active_pokemon.name, self.active_pokemon.species))
+                            pass
+                            # TODO Consider non-attacking moves - need battle-specific stats that get reset. Where to store all moves?
+                        self.active_pokemon.pp_reduce(mapped_choice)
+                        break
             else: # Player did not select Pokemon move
                 if choice == "d": # See detailed move information selected
                     TakeTurn.see_move_details(self.active_pokemon)
@@ -110,7 +118,7 @@ class Player():
                     self.display_inventory()
                     input()
                 elif choice == "s": # Switch Pokemon selected
-                    if self.switch_pokemon() == "switched":
+                    if self.switch_pokemon(battle) == "switched":
                         break
                     input()
                 elif choice == "f": # Attempt to flee selected
@@ -120,3 +128,7 @@ class Player():
                     else: # Opposing Pokemon belongs to a trainer
                         dprint("You cannot flee from a trainer battle!")
                         input()
+
+    def refresh_party_stats(self):
+        for pokemon in self.party:
+            pokemon.non_hp_stat_refresh()

@@ -60,7 +60,7 @@ for index, species in enumerate(species_list):
 
 all_moves = list(set([move for moves in all_moves for move in moves]))
 
-pickle_out = open("moves_dict.pickle", "wb")
+pickle_out = open("moves_by_level.pickle", "wb")
 pickle.dump(moves_dict, pickle_out)
 pickle_out.close()
 

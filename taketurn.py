@@ -4,10 +4,6 @@ import pickle
 import numpy as np
 from pokemon_csv import type_effectiveness
 
-pickle_in = open("moves_dict.pickle", "rb")
-moves_dict = pickle.load(pickle_in)
-pickle_in.close()
-
 pickle_in = open("move_details.pickle", "rb")
 move_details = pickle.load(pickle_in)
 pickle_in.close()
@@ -32,7 +28,7 @@ class TakeTurn():
                 "      Category: ", move_details[move]["category"].ljust(max_category_len),
                 "      Power: ", move_details[move]["power"].ljust(max_power_len),
                 "      Accuracy: ", move_details[move]["accuracy"].ljust(max_accuracy_len),
-                "      PP left: ", attacking_pokemon.moves[move], "/", move_details[move]["pp"])
+                "      PP left: ", attacking_pokemon.moves[move]["temp"], "/", attacking_pokemon.moves[move]["perm"])
             choice_mapping[str(index + 1)] = list(attacking_pokemon.moves.keys())[index]
         print("")
         dprint("Alternatively you could...")
@@ -80,11 +76,11 @@ class TakeTurn():
                 effectiveness_text = " It was super effective!"
             else:
                 effectiveness_text = ""
-            if damage > defending_pokemon.health:
-                damage = defending_pokemon.health
-            defending_pokemon.health -= damage
+            if damage > defending_pokemon.get_health():
+                damage = defending_pokemon.get_health()
+            defending_pokemon.reduce_health(damage)
             dprint("{}{} ({}) inflicted {} damage!{}".format(critical_text, attacking_pokemon.name, attacking_pokemon.species, int(damage), effectiveness_text))
-            dprint("{} ({}) has {}/{} HP remaining.".format(defending_pokemon.name, defending_pokemon.species, int(defending_pokemon.health), int(defending_pokemon.get_stat("hp"))))
+            dprint("{} ({}) has {}/{} HP remaining.".format(defending_pokemon.name, defending_pokemon.species, defending_pokemon.get_health(), defending_pokemon.get_stat("hp", type = "perm")))
         else: # Move misses
             dprint("{} missed!".format(attacking_pokemon.species))
 

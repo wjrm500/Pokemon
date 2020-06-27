@@ -64,9 +64,9 @@ p.set_gender("Male")
 real_choice = "Bulbasaur"
 starter_name = "Paul"
 
-starter_pokemon = Pokemon(species = real_choice, name = starter_name, owner = p)
+starter_pokemon = Pokemon(species = real_choice, name = starter_name, owner = p, level = 25)
 p.add_pokemon(starter_pokemon)
-# p.add_pokemon(Pokemon(species = "Muk", name = "Jim", level = 43, owner = p))
+p.add_pokemon(Pokemon(species = "Gloom", name = "Jim", level = 43, owner = p))
 dprint("{} pockets the orb containing {} the {}.".format(p.name, p.active_pokemon.name, p.active_pokemon.species))
 old_man.speak("{} should serve you well. It's a {} little fellow!".format(p.active_pokemon.name, p.active_pokemon.nature.lower()))
 
@@ -81,8 +81,8 @@ rival_starter_mapping = {
 "Squirtle": "Bulbasaur"
 }
 rival_starter = rival_starter_mapping[p.active_pokemon.species]
-rival.add_pokemon(Pokemon(species = rival_starter, name = "Scunt", owner = rival, level = 20))
-# rival.add_pokemon(Pokemon(species = "Blastoise", name = "Bastard", owner = rival, level = 74))
+rival.add_pokemon(Pokemon(species = rival_starter, name = "Scunt", owner = rival, level = 5))
+rival.add_pokemon(Pokemon(species = "Blastoise", name = "Bastard", owner = rival, level = 33))
 old_man.speak("Ah, I see {} has arrived!".format(rival.name))
 # dprint("You've never met this {} fellow, but there's something about him you don't like.".format(rival.name))
 # rival.speak("We meet at last {}. I've been waiting for this moment for quite some time. Are you ready to FIGHT?!".format(p.name))
@@ -90,7 +90,8 @@ rival.speak("Fight?")
 dprint("Input \"Yes\" or \"No\":")
 fight_choice = input()
 if fight_choice.lower() in ["yes", "y"]:
-    winner = Battle.battle(p, rival)
+    fight = Battle()
+    winner = fight.battle(p, rival)
 else:
     rival.speak("You great namby-pamby!")
     dprint("The old man shakes his head sadly and pulls the ropes that previously bound you to the bedframe from his pocket.")

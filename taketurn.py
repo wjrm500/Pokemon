@@ -55,7 +55,7 @@ class TakeTurn():
         return [choice, mapped_choice]
 
     def deal_damage(attacking_pokemon, defending_pokemon, chosen_move):
-        dprint("{} ({}) used {}!".format(attacking_pokemon.name, attacking_pokemon.species, chosen_move))
+        dprint("{} used {}!".format(attacking_pokemon.battle_name, chosen_move))
         rand_miss = random.random()
         if rand_miss <= float(move_details[chosen_move]["accuracy"]) / 100: # Move hits
             level = attacking_pokemon.level
@@ -79,8 +79,8 @@ class TakeTurn():
             if damage > defending_pokemon.get_health():
                 damage = defending_pokemon.get_health()
             defending_pokemon.reduce_health(damage)
-            dprint("{}{} ({}) inflicted {} damage!{}".format(critical_text, attacking_pokemon.name, attacking_pokemon.species, int(damage), effectiveness_text))
-            dprint("{} ({}) has {}/{} HP remaining.".format(defending_pokemon.name, defending_pokemon.species, defending_pokemon.get_health(), defending_pokemon.get_stat("hp", type = "perm")))
+            dprint("{}{} inflicted {} damage!{}".format(critical_text, attacking_pokemon.battle_name, int(damage), effectiveness_text))
+            dprint("{} has {}/{} HP remaining.".format(defending_pokemon.battle_name, defending_pokemon.get_health(), defending_pokemon.get_stat("hp", type = "perm")))
         else: # Move misses
             dprint("{} missed!".format(attacking_pokemon.species))
 
@@ -95,7 +95,7 @@ class TakeTurn():
 
     def attempt_to_flee(escapee, guard, flee_attempts):
         if escapee.get_stat("speed") > guard.get_stat("speed"): # Player Pokemon is faster than opposing Pokemon
-            dprint("{} ({}) fled!".format(escapee.name, escapee.species))
+            dprint("{} fled!".format(escapee.battle_name))
             #self.flee()
         else: # Player Pokemon is slower than opposing Pokemon
             A = escapee.get_stat("speed")
@@ -104,8 +104,8 @@ class TakeTurn():
             F = (((A * 128) / B) + 30 * C) % 256
             randnum = random.randint(0, 255)
             if randnum < F:
-                dprint("{} ({}) fled!".format(escapee.name, escapee.species))
+                dprint("{} fled!".format(escapee.battle_name))
                 #self.flee()
             else:
-                dprint("{} ({}) tried to flee, but was caught in the act!".format(escapee.name, escapee.species))
+                dprint("{} tried to flee, but was caught in the act!".format(escapee.battle_name))
                 self.battle_stats["flee_attempts"] += 1

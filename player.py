@@ -1,9 +1,10 @@
 from funcs import dprint, final_comma_ampersand
 from taketurn import TakeTurn
 import pickle
-from pokemon import WildPokemon
+from pokemon import Pokemon
 import numpy as np
 import pdb
+from npc import NPC
 
 pickle_in = open("moves_by_level.pickle", "rb")
 moves_by_level = pickle.load(pickle_in)
@@ -16,21 +17,17 @@ pickle_in.close()
 class Player():
     def __init__(self, name):
         self.name = name.capitalize()
-        self.location = "home"
+        self.location = "Home"
         self.inventory = {"Pokeball": 1, "Potion": 1}
         self.party = []
 
     def add_pokemon(self, pokemon):
+        pokemon.owner = self
         self.party.append(pokemon)
         self.active_pokemon = self.party[0]
 
     def set_gender(self, gender):
-        if gender.lower() in ("male", "m"):
-            self.gender = "male"
-        elif gender.lower() in ("female", "f"):
-            self.gender = "female"
-        else:
-            self.gender = "unspecified"
+        self.gender = gender
 
     def move(self):
         new_location = input("Where would you like to go?")
@@ -59,7 +56,7 @@ class Player():
                     print("Which of the following Pokemon would you like to switch in?")
                     for index, pokemon in enumerate([pokemon for pokemon in self.party[1:] if not pokemon.fainted]):
                         print("({})".format(index + 1),
-                            " {} ({})".format(pokemon.name, pokemon.species).ljust(max_name_len),
+                            " {}".format(pokemon.battle_name).ljust(max_name_len),
                             "      Level: ", str(pokemon.level).ljust(max_level_len),
                             "      Type(s): ", final_comma_ampersand(pokemon.types).ljust(max_types_len),
                             "      HP remaining: ", pokemon.get_health(), "/", pokemon.get_stat("hp", type = "perm"))
@@ -87,6 +84,8 @@ class Player():
         self.switch_pokemon(battle, type = "enforced")
 
     def take_turn(self, opponent, battle):
+        if isinstance(opponent, NPC):
+            opponent = opponent.active_pokemon
         while True:
             while True:
                 try:
@@ -103,9 +102,9 @@ class Player():
                         dprint("{} has no PP remaining! Choose another move.".format(mapped_choice))
                     else: # Chosen move has PP remaining
                         if move_details[mapped_choice]["power"] != "NA": # Pokemon move deals damage
-                            TakeTurn.deal_damage(self.active_pokemon, opponent.active_pokemon, mapped_choice)
+                            TakeTurn.deal_damage(self.active_pokemon, opponent, mapped_choice)
                         else: # Pokemon move does not deal damage
-                            dprint("{} ({}) played a move that does not deal damage.".format(self.active_pokemon.name, self.active_pokemon.species))
+                            dprint("{} played a move that does not deal damage.".format(self.active_pokemon.battle_name))
                             pass
                             # TODO Consider non-attacking moves - need battle-specific stats that get reset. Where to store all moves?
                         self.active_pokemon.pp_reduce(mapped_choice)
@@ -122,7 +121,7 @@ class Player():
                         break
                     input()
                 elif choice == "f": # Attempt to flee selected
-                    if isinstance(opponent, WildPokemon): # Opposing Pokemon is wild
+                    if isinstance(opponent, Pokemon): # Opposing Pokemon is wild
                         TakeTurn.attempt_to_flee(self.active_pokemon, opponent, self.battle_stats["flee_attempts"])
                         break
                     else: # Opposing Pokemon belongs to a trainer

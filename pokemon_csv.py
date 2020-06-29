@@ -2,7 +2,7 @@ import pandas as pd
 from tabulate import tabulate
 
 df = pd.read_csv("pokemon_data.csv")
-df = df.head(150)
+df = df.head(386) # Generations I-III
 df.rename(columns = {"name": "species"}, inplace = True)
 df = df.astype({"capture_rate": "int64"})
 
@@ -21,6 +21,14 @@ exp_mapping = {
     1_250_000: "slow"
     }
 
+def bound_exp_growth(x):
+    if x < 800_000:
+        x = 800_000
+    elif x > 1_250_000:
+        x = 1_250_000
+    return x
+
+df["experience_growth"] = df["experience_growth"].apply(bound_exp_growth) # Done because 28 Pokemon in Generation III have more growth patterns that I have not yet taken the time to model in the exp_by_level CSV file
 df["growth_pattern"] = df["experience_growth"].map(exp_mapping)
 growth_patterns = df[["species", "growth_pattern"]]
 growth_patterns.set_index("species", inplace = True)
@@ -34,8 +42,9 @@ capture_rates.set_index("species", inplace = True)
 natures = pd.read_csv("pokemon_nature.csv")
 natures.set_index("nature", inplace = True)
 
-moves = pd.read_csv("pokemon_moves.csv")
-moves.set_index("Name", inplace = True)
+# moves = pd.read_csv("pokemon_moves.csv") # Outdated CSV file, used initially
+# moves = pd.read_csv("pokemon_moves_v2.csv", encoding = "latin-1")
+# moves.set_index("name", inplace = True)
 
 types = df[["species", "type1", "type2"]]
 types.set_index("species", inplace = True)

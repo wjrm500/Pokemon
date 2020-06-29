@@ -22,3 +22,6 @@ def final_comma_ampersand(l):
             return str(l)
     else:
         pass
+
+def inclusive_range(num1, num2):
+    return list(range(num1, num2 + 1))

@@ -9,7 +9,7 @@ class MainLoop():
             "Grass": DoGrass,
             # "Gym": DoGym,
             # "Home": DoHome,
-            # "Pokemon Centre": DoPokemonCentre,
+            "Pokemon Centre": DoPokemonCentre,
             # "PokeMart": DoPokeMart,
             # "Rival's House": DoRivalsHouse,
             # "Water": DoWater
@@ -47,3 +47,6 @@ class MainLoop():
                 dprint("{} exited to the main menu.".format(player.name))
                 dprint("-" * 50)
                 main_menu()
+            else:
+                dprint("Invalid input detected. Please try again.")
+                input()

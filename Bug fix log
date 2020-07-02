@@ -1,0 +1,4 @@
+1st July
+- Fixed fleeing by removing battle_stats Player attribute and replacing with flee_attempts
+- Removed "owner" as argument to new starter Pokemon (when lose to Johnson)
+- Added deletion of storage directories if no saved data

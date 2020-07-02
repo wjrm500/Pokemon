@@ -105,7 +105,7 @@ class TakeTurn():
             randnum = random.randint(0, 255)
             if randnum < F:
                 dprint("{} fled!".format(escapee.battle_name))
-                #self.flee()
+                self.flee()
             else:
                 dprint("{} tried to flee, but was caught in the act!".format(escapee.battle_name))
-                self.battle_stats["flee_attempts"] += 1
+                self.flee_attempts += 1

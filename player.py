@@ -20,6 +20,7 @@ class Player():
         self.location = "Home"
         self.inventory = {"Pokeball": 1, "Potion": 1}
         self.party = []
+        self.flee_attempts = 0
 
     def add_pokemon(self, pokemon):
         pokemon.owner = self
@@ -121,13 +122,15 @@ class Player():
                         break
                     input()
                 elif choice == "f": # Attempt to flee selected
-                    if isinstance(opponent, Pokemon): # Opposing Pokemon is wild
-                        TakeTurn.attempt_to_flee(self.active_pokemon, opponent, self.battle_stats["flee_attempts"])
+                    if opponent.owner == "NA": # Opposing Pokemon is wild
+                        TakeTurn.attempt_to_flee(self.active_pokemon, opponent, self.flee_attempts)
                         break
                     else: # Opposing Pokemon belongs to a trainer
                         dprint("You cannot flee from a trainer battle!")
                         input()
 
-    def refresh_party_stats(self):
+    def reset_party_stats(self):
         for pokemon in self.party:
             pokemon.non_hp_stat_refresh()
+            pokemon.fled = False
+        self.flee_attempts = 0

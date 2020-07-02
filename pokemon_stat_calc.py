@@ -3,9 +3,9 @@ def StatCalculator(level, ivs, nature, base_stats):
     import numpy as np
     import pandas as pd
 
-    non_hp_base_stats = base_stats
+    non_hp_base_stats = base_stats.copy()
     hp_base_stat = non_hp_base_stats.pop("hp")
-    non_hp_ivs = ivs
+    non_hp_ivs = ivs.copy()
     hp_iv = non_hp_ivs.pop("hp")
 
     hp_stat = {"hp": np.floor((2 * hp_base_stat + hp_iv) * level / 100 + level + 10)}

@@ -19,6 +19,7 @@ class NPC():
         self.party = []
 
     def add_pokemon(self, pokemon):
+        pokemon.owner = self
         self.party.append(pokemon)
         self.active_pokemon = self.party[0]
 
@@ -41,6 +42,6 @@ class NPC():
         else:
             pass
 
-    def refresh_party_stats(self):
+    def reset_party_stats(self):
         for pokemon in self.party:
             pokemon.non_hp_stat_refresh()

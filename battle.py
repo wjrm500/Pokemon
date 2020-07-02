@@ -2,6 +2,7 @@ from funcs import dprint
 import numpy as np
 from pokemon import Pokemon
 from npc import NPC
+import pdb
 
 class Battle():
     def __init__(self):
@@ -49,7 +50,7 @@ class Battle():
                 b.take_turn(a, self)
                 check_pokemon_fainted(a)
             for i in [player, npc]:
-                i.refresh_party_stats()
+                i.reset_party_stats()
             winner = npc if np.sum([pokemon.get_health() for pokemon in player.party]) == 0 else player
             dprint("{} won the battle!".format(winner.name))
             return winner
@@ -76,6 +77,15 @@ class Battle():
                     if x.active_pokemon.get_health() == 0:
                         x.active_pokemon.faint()
                         x.handle_faint(self)
+            def check_pokemon_fled(x):
+                if isinstance(x, Pokemon):
+                    if x.fled == True:
+                        return True
+                    return False
+                else:
+                    if x.active_pokemon.fled == True:
+                        return True
+                    return False
             def all_pokemon_fainted():
                 return np.sum([pokemon.get_health() for pokemon in player.party if not pokemon.fainted]) == 0 or wild_pokemon.get_health() == 0
             while not all_pokemon_fainted():
@@ -83,13 +93,24 @@ class Battle():
                 a, b = [player, wild_pokemon] if player_go_first else [wild_pokemon, player]
                 input()
                 a.take_turn(b, self)
+                if check_pokemon_fled(a):
+                    break
                 check_pokemon_fainted(b)
                 if all_pokemon_fainted():
                     break
                 input()
                 b.take_turn(a, self)
+                if check_pokemon_fled(b):
+                    break
                 check_pokemon_fainted(a)
-            player.refresh_party_stats()
-            winner = wild_pokemon if np.sum([pokemon.get_health() for pokemon in player.party]) == 0 else player
-            dprint("{} won the battle!".format(winner.name))
+            if player.active_pokemon.fled:
+                winner = None
+            else:
+                if np.sum([pokemon.get_health() for pokemon in player.party]) == 0:
+                    winner = wild_pokemon
+                else:
+                    winner = player
+                dprint("{} won the battle!".format(winner.name))
+            dprint("-" * 50)
+            player.reset_party_stats()
             return winner

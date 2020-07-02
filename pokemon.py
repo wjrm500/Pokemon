@@ -42,6 +42,7 @@ class Pokemon():
         self.exp_next_level = 0 if self.level == 100 else exp_by_level.loc[self.level + 1, self.growth_pattern]
         self.types = [x.capitalize() for x in list(types.loc[self.species]) if str(x) != "nan"]
         self.fainted = False
+        self.fled = False
         self.guarantee_attacking_move()
 
     def non_hp_stat_refresh(self):
@@ -114,3 +115,6 @@ class Pokemon():
             dprint("{} played a move that does not deal damage.".format(self.battle_name))
             pass
         self.pp_reduce(mapped_choice)
+
+    def flee(self):
+        self.fled = True

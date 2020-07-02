@@ -1,4 +1,4 @@
-from funcs import dprint
+from funcs import dprint, remove_dirs_not_containing_pickle
 import pickle
 import os
 import sys
@@ -15,6 +15,10 @@ import sys
 # poke6 = Pokemon("Venomoth", "Peregrin", p, level = 38)
 # for poke in [poke1, poke2, poke3, poke4, poke5, poke6]:
 #     p.add_pokemon(poke)
+
+# Removes games that have been created but never saved
+storage_directory = os.getcwd() + "/Storage/"
+remove_dirs_not_containing_pickle(storage_directory)
 
 def new_game():
     while True:

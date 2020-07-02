@@ -4,8 +4,52 @@ import random
 from pokemon import Pokemon
 from battle import Battle
 from player import Player
+import pdb
 
-class DoGrass():
+class DoLocation():
+    def __init__(self, player):
+        def leave(self):
+            self.leave = True
+        self.leave = False
+        self.action_options = {
+            "X": {
+                "display_text": "Go somewhere else",
+                "function": leave
+            }
+        }
+        self.add_action_options()
+        self.welcome()
+        self.loop(player)
+
+    def add_action_options(self):
+        self.action_options.update(self.unique_actions)
+
+    def welcome(self):
+        dprint("You have arrived at your destination.")
+
+    def loop(self, player):
+        while True:
+            self.display_options(player)
+            if self.leave == True:
+                break
+
+    def display_options(self, player):
+        while True:
+            dprint("What would you like to do?")
+            for key, value in self.action_options.items():
+                dprint("({}) {}".format(key, value["display_text"]))
+            choice = input()
+            try:
+                mapped_choice = self.action_options[choice]
+                display_text = mapped_choice["display_text"]
+                dprint("You selected {}.".format(display_text))
+                print("Mapped choice: ", mapped_choice)
+                mapped_choice["function"](self, player)
+                break
+            except:
+                dprint("Invalid input detected. Please try again.")
+
+class DoGrass(DoLocation):
     """ IDEAS
     Search for Pokemon
     Go deeper into the grass
@@ -49,58 +93,44 @@ class DoGrass():
                 "levels": inclusive_range(3, 4)
                 }
             }
-        self.welcome(player)
-        global leave_grass
-        leave_grass = False
+        self.initiate_unique_functions()
+        self.unique_actions = {
+            "1": {
+                "display_text": "Search for Pokemon",
+                "function": pokemon_search
+            }
+        }
+        DoLocation.__init__(self, player)
 
-    def welcome(self, player):
-        dprint("You arrive on the grass.")
-        self.loop(player)
+    def initiate_unique_functions(self):
+        global pokemon_search
+        def pokemon_search(self, player):
+            print("We're inside the function lads!")
+            search_time = random.randint(1, 10)
+            dprint("Hunting...")
+            for i in range(search_time):
+                dprint("...")
+            dprint("Wild Pokemon found!")
+            species_found = choice(
+                list(self.pokemon.keys()), # Pokemon
+                1, # Number to return
+                p = [i["rate"] for i in self.pokemon.values()] # Weights
+                )[0]
+            level_found = random.choice(self.pokemon[species_found]["levels"])
+            wild_pokemon = Pokemon(species = species_found, level = level_found)
+            fight = Battle()
+            winner = fight.battle(player, wild_pokemon)
+            return winner
 
-    def loop(self, player):
-        while True:
-            self.display_options(player)
-            if leave_grass == True:
-                break
-
-    def display_options(self, player):
-        dprint("What would you like to do?")
-        dprint("(1) Search for Pokemon")
-        dprint("(2) Go somewhere else")
-        while True:
-            try:
-                a = int(input())
-                if a == 1:
-                    dprint("You selected \"Search for Pokemon\"")
-                    self.pokemon_search(player)
-                    break
-                elif a == 2:
-                    dprint("You selected \"Go somewhere else\"")
-                    global leave_grass
-                    leave_grass = True
-                    break
-                else:
-                    dprint("That number is not available. Please try again.")
-            except:
-                dprint("Invalid input detected. Please try again.")
-
-    def pokemon_search(self, player):
-        search_time = random.randint(1, 10)
-        dprint("Hunting...")
-        for i in range(search_time):
-            dprint("...")
-        dprint("Wild Pokemon found!")
-        species_found = choice(
-            list(self.pokemon.keys()), # Pokemon
-            1, # Number to return
-            p = [i["rate"] for i in self.pokemon.values()] # Weights
-            )[0]
-        level_found = random.choice(self.pokemon[species_found]["levels"])
-        wild_pokemon = Pokemon(species = species_found, level = level_found)
-        fight = Battle()
-        winner = fight.battle(player, wild_pokemon)
-        return winner
-
+class DoPokemonCentre(DoLocation):
+    """ IDEAS
+    Heal Pokemon
+    Use Computer
+    - Manage Pokemon
+    - View statistics
+    """
+    def __init__(self, player):
+        DoLocation.__init__(self, player)
 
 # p = Player("Will")
 # p.add_pokemon(Pokemon("Bulbasaur"))
@@ -133,15 +163,6 @@ class DoGrass():
 #     """
 #     Rest
 #     Chat to Mother
-#     """
-#
-# def do_pokemon_centre():
-#     dprint("Welcome to the Pokemon Centre.")
-#     """
-#     Heal Pokemon
-#     Use Computer
-#     - Manage Pokemon
-#     - View statistics
 #     """
 #
 # def do_pokemart():

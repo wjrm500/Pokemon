@@ -18,7 +18,6 @@ pickle_in.close()
 
 class Pokemon():
     ### TODO evolve function
-    ### TODO level-up function
     ### TODO history subclass? Things like total pokemon defeated, total faints, total move usage, total damage inflicted and taken, pokemon defeated with type breakdown
     def __init__(self, species, name = None, level = 5):
         self.species = species
@@ -79,7 +78,26 @@ class Pokemon():
         dprint("I am a Pokemon")
 
     def display(self):
-        dprint(self.name, " the ", self.species, " Lv. ", self.level)
+        print("{:20} {:20} {:>20}".format(
+            ("Name: " + self.name),
+            ("Species: " + self.species),
+            ("Level: " + str(self.level))
+            )
+        )
+        print("·" * 62)
+        print("{:20} {:20} {:>20}".format(
+            ("HP: " + str(self.get_stat("hp")) + "/" + str(self.get_stat("hp", type = "perm"))),
+            ("Attack: " + str(self.get_stat("attack"))),
+            ("Defense: " + str(self.get_stat("defense")))
+            )
+        )
+        print("{:20} {:20} {:>20}".format(
+            ("Speed: " + str(self.get_stat("speed"))),
+            ("Sp. Attack: " + str(self.get_stat("sp_attack"))),
+            ("Sp. Defense: " + str(self.get_stat("sp_defense")))
+            )
+        )
+        print("■" * 62)
 
     def faint(self):
         self.fainted = True
@@ -106,6 +124,10 @@ class Pokemon():
         self.level += 1
         dprint("{} went from Lv. {} to Lv. {}!".format(self.battle_name, self.level - 1, self.level))
         self.exp_next_level = exp_by_level.loc[self.level + 1, self.growth_pattern]
+        remaining_health_pct = self.get_stat("hp") / self.get_stat("hp", type = "perm")
+        self.stats = StatCalculator(self.level, self.ivs, self.nature, self.base_stats)
+        for key, value in self.stats.items():
+            self.stats[key] = {"temp": int(value * remaining_health_pct), "perm": int(value)}
 
     def take_turn(self, opponent, battle):
         mapped_choice = random.choice(list(self.moves.keys()))

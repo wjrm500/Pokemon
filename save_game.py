@@ -1,19 +1,28 @@
 from funcs import dprint
 import pickle
 import os
+from game import main_menu
+from player import Player
+import pdb
 
 def save_game(player):
-    dprint("{} saved the game.".format(player.name))
-    # Pickle player
+    # TODO: Allow multiple save files per user. Group Pickles by date in individual directories
+    player.location = None
+    dirname = os.getcwd() + "\\Storage\\"
+    path = os.path.join(dirname, player.name)
+    if not os.path.exists(path):
+        os.mkdir(path)
+        dprint("Created new save file for {}.".format(player.name))
     with open("Storage/{}/player.pickle".format(player.name), "wb") as f:
         pickle.dump(player, f)
+    dprint("{} saved the game.".format(player.name))
+    input()
 
-    ### Remove existing party Pokemon from directory
-    mypath = os.getcwd() + "\\Storage\\" + player.name + "\\Party\\"
-    for file in os.scandir(mypath):
-        os.remove(os.path.join(mypath, file))
+def exit_to_main_menu(player):
+    dprint("{} exited to the main menu.".format(player.name))
+    dprint("-" * 50)
+    main_menu()
 
-    # Pickle party Pokemon
-    for pokemon in player.party:
-        with open("Storage/{}/Party/{}.pickle".format(player.name, pokemon.name), "wb") as f:
-            pickle.dump(pokemon, f)
+def save_game_and_exit_to_main_menu(player):
+    save_game(player)
+    exit_to_main_menu(player)

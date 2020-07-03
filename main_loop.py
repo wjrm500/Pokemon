@@ -1,7 +1,6 @@
 from funcs import dprint
 from location_loops import *
-from save_game import save_game
-from game import main_menu
+from save_game import *
 
 class MainLoop():
     def __init__(self, player):
@@ -39,14 +38,9 @@ class MainLoop():
             elif choice.lower() == "a":
                 save_game(player)
             elif choice.lower() == "b":
-                save_game(player)
-                dprint("{} exited to the main menu.".format(player.name))
-                dprint("-" * 50)
-                main_menu()
+                save_game_and_exit_to_main_menu(player)
             elif choice.lower() == "c":
-                dprint("{} exited to the main menu.".format(player.name))
-                dprint("-" * 50)
-                main_menu()
+                exit_to_main_menu(player)
             else:
                 dprint("Invalid input detected. Please try again.")
                 input()

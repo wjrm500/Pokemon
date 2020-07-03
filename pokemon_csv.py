@@ -53,5 +53,7 @@ type_effectiveness = pd.read_csv("type_effectiveness.csv")
 type_effectiveness.set_index("Attacking", inplace = True)
 
 exp_ev_yield = pd.read_csv("pokemon_exp_ev_yield.csv", encoding = "latin-1")
-exp_yield = exp_ev_yield[["species", "exp_yield"]]
+exp_yield = exp_ev_yield[["species", "exp_yield"]].copy()
+exp_yield.loc[28, "species"] = "Nidoran♀"
+exp_yield.loc[32, "species"] = "Nidoran♂"
 exp_yield.set_index("species", inplace = True)

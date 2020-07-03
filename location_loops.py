@@ -5,16 +5,33 @@ from pokemon import Pokemon
 from battle import Battle
 from player import Player
 import pdb
+from save_game import *
 
 class DoLocation():
     def __init__(self, player):
-        def leave(self):
-            self.leave = True
+        player.location = self.location
         self.leave = False
+        self.initiate_generic_functions()
         self.action_options = {
-            "X": {
+            "V": {
+                "display_text": "View Pokemon in party",
+                "function": Player.display_pokemon
+            },
+            "L": {
                 "display_text": "Go somewhere else",
                 "function": leave
+            },
+            "S": {
+                "display_text": "Save game",
+                "function": save_game
+            },
+            "E": {
+                "display_text": "Exit game (with save)",
+                "function": save_game_and_exit_to_main_menu
+            },
+            "X": {
+                "display_text": "Exit game (without save)",
+                "function": exit_to_main_menu
             }
         }
         self.add_action_options()
@@ -36,63 +53,78 @@ class DoLocation():
     def display_options(self, player):
         while True:
             dprint("What would you like to do?")
+            dprint("Location-specific options")
+            print("·" * 62)
             for key, value in self.action_options.items():
-                dprint("({}) {}".format(key, value["display_text"]))
-            choice = input()
+                if key.isnumeric():
+                    dprint("({}) {}".format(key, value["display_text"]))
+            print("")
+            dprint("Generic options")
+            print("·" * 62)
+            for key, value in self.action_options.items():
+                if not key.isnumeric():
+                    dprint("({}) {}".format(key, value["display_text"]))
+            print("")
+            choice = input().upper()
             try:
                 mapped_choice = self.action_options[choice]
-                display_text = mapped_choice["display_text"]
-                dprint("You selected {}.".format(display_text))
-                print("Mapped choice: ", mapped_choice)
-                mapped_choice["function"](self, player)
-                break
             except:
                 dprint("Invalid input detected. Please try again.")
+            display_text = mapped_choice["display_text"]
+            dprint("You selected \"{}\".".format(display_text))
+            mapped_choice["function"](player)
+            break
+
+    def initiate_generic_functions(self):
+        global leave
+        def leave(player):
+            self.leave = True
 
 class DoGrass(DoLocation):
     """ IDEAS
     Search for Pokemon
     Go deeper into the grass
     """
-    def __init__(self, player):
-        self.pokemon = {
-            "Caterpie": {
-                "rate": 0.25,
-                "levels": inclusive_range(2, 3)
-                },
-            "Weedle": {
-                "rate": 0.25,
-                "levels": inclusive_range(2, 3)
-                },
-            "Pidgey": {
-                "rate": 0.12,
-                "levels": inclusive_range(2, 4)
-                },
-            "Rattata": {
-                "rate": 0.13,
-                "levels": inclusive_range(2, 4)
-                },
-            "Spearow": {
-                "rate": 0.09,
-                "levels": inclusive_range(2, 4)
-                },
-            "Ekans": {
-                "rate": 0.04,
-                "levels": inclusive_range(3, 4)
-                },
-            "Pikachu": {
-                "rate": 0.02,
-                "levels": inclusive_range(3, 5)
-                },
-            "Nidoran♀": {
-                "rate": 0.05,
-                "levels": inclusive_range(3, 4)
-                },
-            "Nidoran♂": {
-                "rate": 0.05,
-                "levels": inclusive_range(3, 4)
-                }
+    pokemon = {
+        "Caterpie": {
+            "rate": 0.25,
+            "levels": inclusive_range(2, 3)
+            },
+        "Weedle": {
+            "rate": 0.25,
+            "levels": inclusive_range(2, 3)
+            },
+        "Pidgey": {
+            "rate": 0.12,
+            "levels": inclusive_range(2, 4)
+            },
+        "Rattata": {
+            "rate": 0.13,
+            "levels": inclusive_range(2, 4)
+            },
+        "Spearow": {
+            "rate": 0.09,
+            "levels": inclusive_range(2, 4)
+            },
+        "Ekans": {
+            "rate": 0.04,
+            "levels": inclusive_range(3, 4)
+            },
+        "Pikachu": {
+            "rate": 0.02,
+            "levels": inclusive_range(3, 5)
+            },
+        "Nidoran♀": {
+            "rate": 0.05,
+            "levels": inclusive_range(3, 4)
+            },
+        "Nidoran♂": {
+            "rate": 0.05,
+            "levels": inclusive_range(3, 4)
             }
+        }
+    def __init__(self, player):
+        self.location = "Grass"
         self.initiate_unique_functions()
         self.unique_actions = {
             "1": {
@@ -104,19 +136,18 @@ class DoGrass(DoLocation):
 
     def initiate_unique_functions(self):
         global pokemon_search
-        def pokemon_search(self, player):
-            print("We're inside the function lads!")
+        def pokemon_search(player):
             search_time = random.randint(1, 10)
             dprint("Hunting...")
             for i in range(search_time):
                 dprint("...")
             dprint("Wild Pokemon found!")
             species_found = choice(
-                list(self.pokemon.keys()), # Pokemon
+                list(DoGrass.pokemon.keys()), # Pokemon
                 1, # Number to return
-                p = [i["rate"] for i in self.pokemon.values()] # Weights
+                p = [i["rate"] for i in DoGrass.pokemon.values()] # Weights
                 )[0]
-            level_found = random.choice(self.pokemon[species_found]["levels"])
+            level_found = random.choice(DoGrass.pokemon[species_found]["levels"])
             wild_pokemon = Pokemon(species = species_found, level = level_found)
             fight = Battle()
             winner = fight.battle(player, wild_pokemon)
@@ -130,7 +161,23 @@ class DoPokemonCentre(DoLocation):
     - View statistics
     """
     def __init__(self, player):
+        self.location = "Pokemon Centre"
+        self.initiate_unique_functions()
+        self.unique_actions = {
+            "1": {
+                "display_text": "Heal Pokemon",
+                "function": heal_pokemon
+            }
+        }
         DoLocation.__init__(self, player)
+
+    def initiate_unique_functions(self):
+        global heal_pokemon
+        def heal_pokemon(player):
+            for pokemon in player.party:
+                pokemon.stats["hp"]["temp"] = pokemon.stats["hp"]["perm"]
+                dprint("All Pokemon healed to full health!")
+                input()
 
 # p = Player("Will")
 # p.add_pokemon(Pokemon("Bulbasaur"))
@@ -163,6 +210,7 @@ class DoPokemonCentre(DoLocation):
 #     """
 #     Rest
 #     Chat to Mother
+#     IV revealer?
 #     """
 #
 # def do_pokemart():

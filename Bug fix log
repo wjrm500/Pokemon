@@ -2,3 +2,8 @@
 - Fixed fleeing by removing battle_stats Player attribute and replacing with flee_attempts
 - Removed "owner" as argument to new starter Pokemon (when lose to Johnson)
 - Added deletion of storage directories if no saved data
+
+
+2nd July
+- Noticed bug - when loading game, pokemon are duplicated. Still only one PICKLE file. I think maybe it's something to do with reappending Pokemon objects
+to Player party. Does pickling an object pickle sub-objects?

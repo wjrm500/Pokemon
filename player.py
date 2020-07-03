@@ -27,6 +27,10 @@ class Player():
         self.party.append(pokemon)
         self.active_pokemon = self.party[0]
 
+    def release_pokemon(self, pokemon):
+        self.party.remove(pokemon)
+        self.active_pokemon = self.party[0]
+
     def set_gender(self, gender):
         self.gender = gender
 
@@ -38,6 +42,7 @@ class Player():
         self.location.interact(self)
 
     def display_pokemon(self):
+        print("■" * 62)
         for pokemon in self.party:
             pokemon.display()
 

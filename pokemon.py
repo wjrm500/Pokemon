@@ -7,6 +7,7 @@ import string
 import numpy as np
 from npc import NPC
 from taketurn import TakeTurn
+from bars import exp_bar
 
 pickle_in = open("moves_by_level.pickle", "rb")
 moves_by_level = pickle.load(pickle_in)
@@ -41,7 +42,6 @@ class Pokemon():
         self.exp_next_level = 0 if self.level == 100 else exp_by_level.loc[self.level + 1, self.growth_pattern]
         self.types = [x.capitalize() for x in list(types.loc[self.species]) if str(x) != "nan"]
         self.fainted = False
-        self.fled = False
         self.guarantee_attacking_move()
 
     def non_hp_stat_refresh(self):
@@ -70,6 +70,9 @@ class Pokemon():
 
     def get_health(self):
         return self.stats["hp"]["temp"]
+
+    def add_health(self, health_added):
+        self.stats["hp"]["temp"] += health_added
 
     def reduce_health(self, damage):
         self.stats["hp"]["temp"] -= damage
@@ -112,8 +115,9 @@ class Pokemon():
         l = opposing_pokemon.level
         s = participants
         exp_gain = int((a * b * l) / (7 * s))
-        self.exp += exp_gain
         dprint("{} gained {:,} experience.".format(self.battle_name, exp_gain))
+        exp_bar(self, exp_gain)
+        self.exp += exp_gain
         while self.exp > self.exp_next_level and self.exp_next_level != 0:
             self.level_up()
         exp_needed = int(self.exp_next_level - self.exp)
@@ -129,14 +133,11 @@ class Pokemon():
         for key, value in self.stats.items():
             self.stats[key] = {"temp": int(value * remaining_health_pct), "perm": int(value)}
 
-    def take_turn(self, opponent, battle):
+    def take_turn(self, battle, opponent):
         mapped_choice = random.choice(list(self.moves.keys()))
         if move_details[mapped_choice]["power"] != "NA": # Pokemon move deals damage
             TakeTurn.deal_damage(self, opponent.active_pokemon, mapped_choice)
+            TakeTurn.check_pokemon_fainted(battle, opponent.active_pokemon)
         else: # Pokemon move does not deal damage
             dprint("{} played a move that does not deal damage.".format(self.battle_name))
-            pass
         self.pp_reduce(mapped_choice)
-
-    def flee(self):
-        self.fled = True

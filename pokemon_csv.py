@@ -57,3 +57,9 @@ exp_yield = exp_ev_yield[["species", "exp_yield"]].copy()
 exp_yield.loc[28, "species"] = "Nidoran♀"
 exp_yield.loc[32, "species"] = "Nidoran♂"
 exp_yield.set_index("species", inplace = True)
+
+catch_rates = pd.read_csv("pokemon_catch_rates.csv", encoding = "latin-1")
+catch_rates.drop(columns = ["pokedex_num"], inplace = True)
+catch_rates.loc[28, "species"] = "Nidoran♀"
+catch_rates.loc[32, "species"] = "Nidoran♂"
+catch_rates.set_index("species", inplace = True)

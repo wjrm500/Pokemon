@@ -26,7 +26,7 @@ class NPC():
     def speak(self, text = "Bugger me, I've got nothing to say!"):
         dprint('{}: "{}"'.format(self.name, text))
 
-    def take_turn(self, opponent, battle):
+    def take_turn(self, battle, opponent):
         mapped_choice = random.choice(list(self.active_pokemon.moves.keys()))
         if move_details[mapped_choice]["power"] != "NA": # Pokemon move deals damage
             TakeTurn.deal_damage(self.active_pokemon, opponent.active_pokemon, mapped_choice)

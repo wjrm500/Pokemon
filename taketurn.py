@@ -1,8 +1,11 @@
-from funcs import dprint
+from funcs import dprint, inclusive_range, final_comma_ampersand
 import random
 import pickle
 import numpy as np
-from pokemon_csv import type_effectiveness
+from pokemon_csv import type_effectiveness, catch_rates
+from bars import health_bar
+import time
+import pdb
 
 pickle_in = open("move_details.pickle", "rb")
 move_details = pickle.load(pickle_in)
@@ -78,11 +81,22 @@ class TakeTurn():
                 effectiveness_text = ""
             if damage > defending_pokemon.get_health():
                 damage = defending_pokemon.get_health()
-            defending_pokemon.reduce_health(damage)
             dprint("{}{} inflicted {} damage!{}".format(critical_text, attacking_pokemon.battle_name, int(damage), effectiveness_text))
+            health_bar(defending_pokemon.get_stat("hp", type = "perm"), defending_pokemon.get_stat("hp", type = "temp"), damage, type = "damage")
+            defending_pokemon.reduce_health(damage)
             dprint("{} has {}/{} HP remaining.".format(defending_pokemon.battle_name, defending_pokemon.get_health(), defending_pokemon.get_stat("hp", type = "perm")))
         else: # Move misses
             dprint("{} missed!".format(attacking_pokemon.species))
+
+    def check_pokemon_fainted(battle, x):
+        if x.get_health() == 0:
+            x.faint()
+            if x.owner != battle.player:
+                for participant in battle.participants:
+                    participant.gain_exp(x, len(battle.participants))
+                battle.participants = [battle.participants[-1]] # For experience sharing - ensures only most recently appended participant remains as a participant
+            elif x.owner == battle.player:
+                battle.player.handle_faint(battle)
 
     def see_move_details(attacking_pokemon):
         nums = list(range(1, 5))
@@ -93,19 +107,86 @@ class TakeTurn():
                 move.ljust(max_move_len),
                 "      Effect: ", move_details[move]["effect"])
 
-    def attempt_to_flee(escapee, guard, flee_attempts):
+    def attempt_to_flee(escapee, guard):
         if escapee.get_stat("speed") > guard.get_stat("speed"): # Player Pokemon is faster than opposing Pokemon
             dprint("{} fled!".format(escapee.battle_name))
-            #self.flee()
+            escapee.flee()
         else: # Player Pokemon is slower than opposing Pokemon
             A = escapee.get_stat("speed")
             B = guard.get_stat("speed")
-            C = flee_attempts
+            C = escapee.flee_attempts
             F = (((A * 128) / B) + 30 * C) % 256
             randnum = random.randint(0, 255)
             if randnum < F:
                 dprint("{} fled!".format(escapee.battle_name))
-                self.flee()
+                escapee.flee()
+                return True
             else:
                 dprint("{} tried to flee, but was caught in the act!".format(escapee.battle_name))
-                self.flee_attempts += 1
+                escapee.flee_attempts += 1
+                return False
+
+    def throw_pokeball(player, wild_pokemon, ball_type = "Poke Ball"):
+        def pokemon_caught(player, wild_pokemon):
+            player.add_pokemon(wild_pokemon)
+            dprint("{} was caught!".format(wild_pokemon.species))
+            dprint("Care to name the little bugger?")
+            dprint("Input name:")
+            name = input()
+            wild_pokemon.name = name
+        dprint("{} threw a {} at {}!".format(player.name, ball_type, wild_pokemon.species))
+        if ball_type == "Master Ball":
+            dprint("The Master Ball shook once...".format(ball_type))
+            pokemon_caught(player, wild_pokemon)
+        else:
+            hp_max = wild_pokemon.get_stat("hp", type = "perm")
+            hp_current = wild_pokemon.get_stat("hp", type = "temp")
+            catch_rate = catch_rates.loc[wild_pokemon.species]["catch_rate"]
+            if ball_type == "Poke Ball":
+                ball_bonus = 1
+            elif ball_type == "Great Ball":
+                ball_bonus = 1.5
+            elif ball_type == "Ultra Ball":
+                ball_bonus = 2
+            ### Modified catch rate
+            a = ((3 * hp_max - 2 * hp_current) * catch_rate * ball_bonus) / (3 * hp_max)
+            ### Shake probability
+            b = 1048560 / np.sqrt(np.sqrt(16711680 / a))
+            ### Shake checks
+            for i in ["once", "twice", "three times", "four times"]:
+                dprint("The {} shook {}...".format(ball_type, i))
+                time.sleep(0.5)
+                rand_num = random.randint(0, 65_535)
+                if rand_num >= b:
+                    dprint("{} escaped!".format(wild_pokemon.species))
+                    return False
+            pokemon_caught(player, wild_pokemon)
+            return True
+
+    def drink_potion(player, potion_type = "Potion"):
+        choice_mapping = {}
+        max_name_len = max([np.sum([len(pokemon.name), len(pokemon.species)]) for pokemon in player.party if not pokemon.fainted]) + 4
+        max_level_len = len(max([str(pokemon.level) for pokemon in player.party if not pokemon.fainted], key = len))
+        max_types_len = max([np.sum([len(type) for type in pokemon.types]) for pokemon in player.party if not pokemon.fainted]) + 3
+        dprint("Which Pokemon would you like to give the {} to?".format(potion_type))
+        for index, pokemon in enumerate([pokemon for pokemon in player.party if not pokemon.fainted]):
+            print("({})".format(index + 1),
+                " {}".format(pokemon.battle_name).ljust(max_name_len),
+                "      Level: ", str(pokemon.level).ljust(max_level_len),
+                "      Type(s): ", final_comma_ampersand(pokemon.types).ljust(max_types_len),
+                "      HP remaining: ", pokemon.get_health(), "/", pokemon.get_stat("hp", type = "perm"))
+            choice_mapping[index + 1] = pokemon
+        choice = int(input())
+        chosen_pokemon = choice_mapping[choice]
+        health_from_full = chosen_pokemon.stats["hp"]["perm"] - chosen_pokemon.stats["hp"]["temp"]
+        potion_mapping = {
+            "Potion": min(20, health_from_full),
+            "Super Potion": min(50, health_from_full),
+            "Hyper Potion": min(200, health_from_full),
+            "Max Potion": health_from_full
+        }
+        health_added = potion_mapping[potion_type]
+        dprint("{} gave {} a {}!".format(player.name, chosen_pokemon.battle_name, potion_type))
+        health_bar(chosen_pokemon.get_stat("hp", type = "perm"), chosen_pokemon.get_stat("hp", type = "temp"), health_added, type = "health_added")
+        chosen_pokemon.add_health(health_added)
+        dprint("{}'s HP increased by {}!".format(chosen_pokemon.battle_name, health_added))

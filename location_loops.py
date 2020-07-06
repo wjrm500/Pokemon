@@ -53,6 +53,7 @@ class DoLocation():
     def display_options(self, player):
         while True:
             dprint("What would you like to do?")
+            print("")
             dprint("Location-specific options")
             print("·" * 62)
             for key, value in self.action_options.items():
@@ -70,6 +71,7 @@ class DoLocation():
                 mapped_choice = self.action_options[choice]
             except:
                 dprint("Invalid input detected. Please try again.")
+                break
             display_text = mapped_choice["display_text"]
             dprint("You selected \"{}\".".format(display_text))
             mapped_choice["function"](player)
@@ -87,19 +89,19 @@ class DoGrass(DoLocation):
     """
     pokemon = {
         "Caterpie": {
-            "rate": 0.25,
+            "rate": 0.28,
             "levels": inclusive_range(2, 3)
             },
         "Weedle": {
-            "rate": 0.25,
+            "rate": 0.28,
             "levels": inclusive_range(2, 3)
             },
         "Pidgey": {
-            "rate": 0.12,
+            "rate": 0.14,
             "levels": inclusive_range(2, 4)
             },
         "Rattata": {
-            "rate": 0.13,
+            "rate": 0.15,
             "levels": inclusive_range(2, 4)
             },
         "Spearow": {
@@ -114,14 +116,14 @@ class DoGrass(DoLocation):
             "rate": 0.02,
             "levels": inclusive_range(3, 5)
             },
-        "Nidoran♀": {
-            "rate": 0.05,
-            "levels": inclusive_range(3, 4)
-            },
-        "Nidoran♂": {
-            "rate": 0.05,
-            "levels": inclusive_range(3, 4)
-            }
+        # "Nidoran♀": {
+        #     "rate": 0.05,
+        #     "levels": inclusive_range(3, 4)
+        #     },
+        # "Nidoran♂": {
+        #     "rate": 0.05,
+        #     "levels": inclusive_range(3, 4)
+        #     }
         }
     def __init__(self, player):
         self.location = "Grass"
@@ -175,8 +177,12 @@ class DoPokemonCentre(DoLocation):
         global heal_pokemon
         def heal_pokemon(player):
             for pokemon in player.party:
+                pokemon.fainted = False
                 pokemon.stats["hp"]["temp"] = pokemon.stats["hp"]["perm"]
                 dprint("All Pokemon healed to full health!")
+                for move in pokemon.moves.keys():
+                    pokemon.moves[move]["temp"] = pokemon.moves[move]["perm"]
+                dprint("All Pokemon had their PP restored!")
                 input()
 
 # p = Player("Will")

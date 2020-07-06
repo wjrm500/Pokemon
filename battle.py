@@ -10,9 +10,9 @@ class Battle():
         self.battle_intro()
 
     def battle_intro(self):
-        dprint("-" * 50)
+        dprint("-" * 62)
         dprint("IT'S BATTLE TIME")
-        dprint("-" * 50)
+        dprint("-" * 62)
 
     def battle(self, player, opponent):
         if isinstance(opponent, NPC):
@@ -42,12 +42,12 @@ class Battle():
                 speed_check()
                 a, b = [player, npc] if player_go_first else [npc, player]
                 input()
-                a.take_turn(b, self)
+                a.take_turn(self, b)
                 check_pokemon_fainted(b)
                 if all_pokemon_fainted():
                     break
                 input()
-                b.take_turn(a, self)
+                b.take_turn(self, a)
                 check_pokemon_fainted(a)
             for i in [player, npc]:
                 i.reset_party_stats()
@@ -66,17 +66,6 @@ class Battle():
             dprint("{} sent out {} (Lv. {})!".format(player.name, player_pokemon.battle_name, player_pokemon.level))
             speed_text = "{} has the speed advantage, which means {} will go first!"
             print(speed_text.format(player_pokemon.battle_name, player.name) if player_go_first else speed_text.format(wild_pokemon.battle_name, "it"))
-            def check_pokemon_fainted(x):
-                if isinstance(x, Pokemon):
-                    if x.get_health() == 0:
-                        x.faint()
-                        for participant in self.participants:
-                            participant.gain_exp(x, len(self.participants))
-                        self.participants = [self.participants[-1]] # For experience sharing - ensures only most recently appended participant remains as a participant
-                else:
-                    if x.active_pokemon.get_health() == 0:
-                        x.active_pokemon.faint()
-                        x.handle_faint(self)
             def check_pokemon_fled(x):
                 if isinstance(x, Pokemon):
                     if x.fled == True:
@@ -92,17 +81,15 @@ class Battle():
                 speed_check()
                 a, b = [player, wild_pokemon] if player_go_first else [wild_pokemon, player]
                 input()
-                a.take_turn(b, self)
+                a.take_turn(self, b)
                 if check_pokemon_fled(a):
                     break
-                check_pokemon_fainted(b)
                 if all_pokemon_fainted():
                     break
                 input()
-                b.take_turn(a, self)
+                b.take_turn(self, a)
                 if check_pokemon_fled(b):
                     break
-                check_pokemon_fainted(a)
             if player.active_pokemon.fled:
                 winner = None
             else:
@@ -111,6 +98,7 @@ class Battle():
                 else:
                     winner = player
                 dprint("{} won the battle!".format(winner.name))
-            dprint("-" * 50)
+            input()
+            dprint("-" * 62)
             player.reset_party_stats()
             return winner

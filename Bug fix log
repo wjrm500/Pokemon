@@ -7,3 +7,18 @@
 2nd July
 - Noticed bug - when loading game, pokemon are duplicated. Still only one PICKLE file. I think maybe it's something to do with reappending Pokemon objects
 to Player party. Does pickling an object pickle sub-objects?
+- I should only create directory on save, not on new game
+
+3rd July
+- Nidoran still not working due to move details non index. Same issue will exist for Farfetchd and Mr Mime
+
+4th July
+- Issue with Pokemon fainting. WHen its healed it then wins battles instantly - pokemon centre needs to set fainted to False
+- fleeing does not work
+- move details accuracy infinite symbol not working
+- pokemon gain experience when fainting?!
+
+
+Took check_pokemon_fainted out of battle class
+
+Need to make sure that when a sixth pokemon is added, they get sent to PC

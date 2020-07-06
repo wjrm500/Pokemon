@@ -5,6 +5,7 @@ from pokemon import Pokemon
 import numpy as np
 import pdb
 from npc import NPC
+from inventory import Inventory
 
 pickle_in = open("moves_by_level.pickle", "rb")
 moves_by_level = pickle.load(pickle_in)
@@ -18,7 +19,7 @@ class Player():
     def __init__(self, name):
         self.name = name.capitalize()
         self.location = "Home"
-        self.inventory = {"Pokeball": 1, "Potion": 1}
+        self.inventory = Inventory(self)
         self.party = []
         self.flee_attempts = 0
 
@@ -46,11 +47,6 @@ class Player():
         for pokemon in self.party:
             pokemon.display()
 
-    def display_inventory(self):
-        dprint("Your bag contains the following items...")
-        for item, quantity in self.inventory.items():
-            dprint("{} x {}".format(quantity, item))
-
     def switch_pokemon(self, battle, type = "voluntary"):
         while True:
             try:
@@ -59,7 +55,7 @@ class Player():
                     max_name_len = max([np.sum([len(pokemon.name), len(pokemon.species)]) for pokemon in self.party[1:] if not pokemon.fainted]) + 4
                     max_level_len = len(max([str(pokemon.level) for pokemon in self.party[1:] if not pokemon.fainted], key = len))
                     max_types_len = max([np.sum([len(type) for type in pokemon.types]) for pokemon in self.party[1:] if not pokemon.fainted]) + 3
-                    print("Which of the following Pokemon would you like to switch in?")
+                    dprint("Which of the following Pokemon would you like to switch in?")
                     for index, pokemon in enumerate([pokemon for pokemon in self.party[1:] if not pokemon.fainted]):
                         print("({})".format(index + 1),
                             " {}".format(pokemon.battle_name).ljust(max_name_len),
@@ -89,7 +85,7 @@ class Player():
         battle.participants.remove(self.active_pokemon)
         self.switch_pokemon(battle, type = "enforced")
 
-    def take_turn(self, opponent, battle):
+    def take_turn(self, battle, opponent):
         if isinstance(opponent, NPC):
             opponent = opponent.active_pokemon
         while True:
@@ -109,9 +105,9 @@ class Player():
                     else: # Chosen move has PP remaining
                         if move_details[mapped_choice]["power"] != "NA": # Pokemon move deals damage
                             TakeTurn.deal_damage(self.active_pokemon, opponent, mapped_choice)
+                            TakeTurn.check_pokemon_fainted(battle, opponent)
                         else: # Pokemon move does not deal damage
                             dprint("{} played a move that does not deal damage.".format(self.active_pokemon.battle_name))
-                            pass
                             # TODO Consider non-attacking moves - need battle-specific stats that get reset. Where to store all moves?
                         self.active_pokemon.pp_reduce(mapped_choice)
                         break
@@ -120,7 +116,12 @@ class Player():
                     TakeTurn.see_move_details(self.active_pokemon)
                     input()
                 elif choice == "b": # Rummage in bag selected
-                    self.display_inventory()
+                    value = self.inventory.display_items(opponent)
+                    if value == "pokemon_caught":
+                        battle.wild_pokemon_caught = True
+                        break
+                    elif value == "pokeball_missed" or value == "potion_drunk":
+                        break
                     input()
                 elif choice == "s": # Switch Pokemon selected
                     if self.switch_pokemon(battle) == "switched":
@@ -128,7 +129,9 @@ class Player():
                     input()
                 elif choice == "f": # Attempt to flee selected
                     if opponent.owner == "NA": # Opposing Pokemon is wild
-                        TakeTurn.attempt_to_flee(self.active_pokemon, opponent, self.flee_attempts)
+                        flee_successful = TakeTurn.attempt_to_flee(self.active_pokemon, opponent)
+                        if flee_successful:
+                            battle.player_fled =  True
                         break
                     else: # Opposing Pokemon belongs to a trainer
                         dprint("You cannot flee from a trainer battle!")
@@ -137,5 +140,9 @@ class Player():
     def reset_party_stats(self):
         for pokemon in self.party:
             pokemon.non_hp_stat_refresh()
-            pokemon.fled = False
         self.flee_attempts = 0
+
+    def has_pokemon_available(self):
+        if np.sum([pokemon.get_health() for pokemon in self.party]) > 0:
+            return True
+        return False

@@ -25,27 +25,3 @@ def final_comma_ampersand(l):
 
 def inclusive_range(num1, num2):
     return list(range(num1, num2 + 1))
-
-def remove_dirs_not_containing_pickle(dpath):
-    """
-    Issue with this - seems to only delete directories alphabetically before the first pickle-containing directory
-    """
-    # import os
-    # if os.path.isdir(dpath):
-    #     entries = [os.path.join(dpath, entry) for entry in os.listdir(dpath)]
-    #     subdirs = filter(os.path.isdir, entries)
-    #     if all(map(remove_dirs_not_containing_pickle, subdirs)):
-    #         files = filter(os.path.isfile, entries)
-    #         pdf_files = [f for f in files if f.endswith(".PICKLE")]
-    #         if not pdf_files:
-    #             try:
-    #                 for f in files:
-    #                     os.unlink(f)
-    #                 os.rmdir(dpath)
-    #             except OSError as e:
-    #                 return False
-    #             return True
-    #     return False
-    # else:
-    #     return False
-    pass

@@ -1,8 +1,7 @@
-from player import Player
+from person import Player, NPC
 from pokemon import Pokemon
-from npc import NPC
 from funcs import dprint, final_comma_ampersand
-from battle import Battle
+from battle import Battle_Trainer
 import random
 import sys
 from main_loop import MainLoop
@@ -131,8 +130,7 @@ Just joking! You chose {}! Care to give the little bugger a name?""".format(poke
         fight_choice = input()
         if len(fight_choice) > 0:
             if fight_choice.lower()[0] == "y":
-                fight = Battle()
-                winner = fight.battle(p, rival)
+                winner = Battle_Trainer(p, rival)
                 break
             elif fight_choice.lower()[0] == "n":
                 if verbose == True:

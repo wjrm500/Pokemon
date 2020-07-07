@@ -1,11 +1,9 @@
 from funcs import dprint, final_comma_ampersand
 from taketurn import TakeTurn
 import pickle
-from pokemon import Pokemon
 import numpy as np
-import pdb
-from npc import NPC
 from inventory import Inventory
+import random
 
 pickle_in = open("moves_by_level.pickle", "rb")
 moves_by_level = pickle.load(pickle_in)
@@ -15,18 +13,29 @@ pickle_in = open("move_details.pickle", "rb")
 move_details = pickle.load(pickle_in)
 pickle_in.close()
 
-class Player():
+class Person():
     def __init__(self, name):
         self.name = name.capitalize()
-        self.location = "Home"
+        self.location = None
+        self.money = 100
         self.inventory = Inventory(self)
         self.party = []
+        self.storage = []
         self.flee_attempts = 0
 
-    def add_pokemon(self, pokemon):
-        pokemon.owner = self
-        self.party.append(pokemon)
-        self.active_pokemon = self.party[0]
+    def add_pokemon(self, pokemon, to = "party"):
+        if not isinstance(pokemon, list):
+            pokemon = [pokemon]
+        for poke in pokemon:
+            poke.owner = self
+            if len(self.party) >= 6 or to == "storage":
+                self.storage.append(poke)
+                poke.fainted = False
+                poke.stats["hp"]["temp"] = poke.stats["hp"]["perm"]
+                dprint("{} was added to storage.".format(poke.battle_name))
+            else:
+                self.party.append(poke)
+                self.active_pokemon = self.party[0]
 
     def release_pokemon(self, pokemon):
         self.party.remove(pokemon)
@@ -35,17 +44,25 @@ class Player():
     def set_gender(self, gender):
         self.gender = gender
 
-    def move(self):
-        new_location = input("Where would you like to go?")
-        self.location = new_location
-
-    def interact(self):
-        self.location.interact(self)
-
     def display_pokemon(self):
         print("■" * 62)
         for pokemon in self.party:
             pokemon.display()
+        input()
+
+    def reset_party_stats(self):
+        for pokemon in self.party:
+            pokemon.non_hp_stat_refresh()
+        self.flee_attempts = 0
+
+    def has_pokemon_available(self):
+        if np.sum([pokemon.get_health() for pokemon in self.party]) > 0:
+            return True
+        return False
+
+class Player(Person):
+    def __init__(self, name):
+        super().__init__(name)
 
     def switch_pokemon(self, battle, type = "voluntary"):
         while True:
@@ -80,10 +97,6 @@ class Player():
                 break
             except:
                 dprint("You must select one of the available options.")
-
-    def handle_faint(self, battle):
-        battle.participants.remove(self.active_pokemon)
-        self.switch_pokemon(battle, type = "enforced")
 
     def take_turn(self, battle, opponent):
         if isinstance(opponent, NPC):
@@ -137,12 +150,42 @@ class Player():
                         dprint("You cannot flee from a trainer battle!")
                         input()
 
-    def reset_party_stats(self):
-        for pokemon in self.party:
-            pokemon.non_hp_stat_refresh()
-        self.flee_attempts = 0
+    def handle_faint(self, battle):
+        battle.participants.remove(self.active_pokemon)
+        self.switch_pokemon(battle, type = "enforced")
 
-    def has_pokemon_available(self):
-        if np.sum([pokemon.get_health() for pokemon in self.party]) > 0:
-            return True
-        return False
+class NPC(Person):
+    def __init__(self, name):
+        super().__init__(name)
+
+    def speak(self, words):
+        dprint("{}: \"{}\"".format(self.name, words))
+
+    def switch_pokemon(self, battle, type = "voluntary"):
+        if len([pokemon for pokemon in self.party[1:] if not pokemon.fainted]) > 0:
+            chosen_pokemon = random.choice([pokemon for pokemon in self.party[1:] if not pokemon.fainted])
+            self.party.insert(0, self.party.pop(self.party.index(chosen_pokemon)))
+            self.active_pokemon = self.party[0]
+            if self.active_pokemon not in battle.participants:
+                battle.participants.append(self.active_pokemon)
+            dprint("{} switched in {}!".format(self.name, self.active_pokemon.name))
+            return "switched"
+        else:
+            if type == "voluntary":
+                dprint("{} only has one Pokemon in their party!".format(self.name))
+            elif type == "enforced":
+                dprint("{} is all out of Pokemon!".format(self.name))
+            return "unswitched"
+
+    def take_turn(self, battle, opponent):
+        mapped_choice = random.choice(list(self.active_pokemon.moves.keys()))
+        if move_details[mapped_choice]["power"] != "NA": # Pokemon move deals damage
+            TakeTurn.deal_damage(self.active_pokemon, opponent.active_pokemon, mapped_choice)
+            TakeTurn.check_pokemon_fainted(battle, opponent.active_pokemon)
+        else: # Pokemon move does not deal damage
+            dprint("{} played a move that does not deal damage.".format(self.active_pokemon.battle_name))
+            pass
+        self.active_pokemon.pp_reduce(mapped_choice)
+
+    def handle_faint(self, battle):
+        self.switch_pokemon(battle, type = "enforced")

@@ -5,7 +5,6 @@ import random
 import pickle
 import string
 import numpy as np
-from npc import NPC
 from taketurn import TakeTurn
 from bars import exp_bar
 

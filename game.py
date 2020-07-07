@@ -1,7 +1,6 @@
-from funcs import dprint, remove_dirs_not_containing_pickle
+from funcs import dprint
 import pickle
 import os
-# import sys
 import pdb
 import shutil
 

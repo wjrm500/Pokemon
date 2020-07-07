@@ -2,7 +2,6 @@ from funcs import dprint
 import pickle
 import os
 from game import main_menu
-from player import Player
 import pdb
 
 def save_game(player):

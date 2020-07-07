@@ -2,8 +2,8 @@ from funcs import dprint, inclusive_range
 from numpy.random import choice
 import random
 from pokemon import Pokemon
-from battle import Battle
-from player import Player
+from battle import *
+from person import *
 import pdb
 from save_game import *
 
@@ -13,12 +13,16 @@ class DoLocation():
         self.leave = False
         self.initiate_generic_functions()
         self.action_options = {
-            "V": {
+            "P": {
                 "display_text": "View Pokemon in party",
                 "function": Player.display_pokemon
             },
+            "I": {
+                "display_text": "View items in inventory",
+                "function": Inventory.display_items
+            },
             "L": {
-                "display_text": "Go somewhere else",
+                "display_text": "Return to main loop",
                 "function": leave
             },
             "S": {
@@ -74,7 +78,10 @@ class DoLocation():
                 break
             display_text = mapped_choice["display_text"]
             dprint("You selected \"{}\".".format(display_text))
-            mapped_choice["function"](player)
+            if display_text == "View items in inventory":
+                mapped_choice["function"](player.inventory)
+            else:
+                mapped_choice["function"](player)
             break
 
     def initiate_generic_functions(self):
@@ -151,9 +158,7 @@ class DoGrass(DoLocation):
                 )[0]
             level_found = random.choice(DoGrass.pokemon[species_found]["levels"])
             wild_pokemon = Pokemon(species = species_found, level = level_found)
-            fight = Battle()
-            winner = fight.battle(player, wild_pokemon)
-            return winner
+            Battle_Wild_Pokemon(player, wild_pokemon)
 
 class DoPokemonCentre(DoLocation):
     """ IDEAS
@@ -169,12 +174,17 @@ class DoPokemonCentre(DoLocation):
             "1": {
                 "display_text": "Heal Pokemon",
                 "function": heal_pokemon
+            },
+            "2": {
+                "display_text": "Use computer",
+                "function": use_computer
             }
         }
         DoLocation.__init__(self, player)
 
     def initiate_unique_functions(self):
         global heal_pokemon
+        global use_computer
         def heal_pokemon(player):
             for pokemon in player.party:
                 pokemon.fainted = False
@@ -184,6 +194,102 @@ class DoPokemonCentre(DoLocation):
                     pokemon.moves[move]["temp"] = pokemon.moves[move]["perm"]
                 dprint("All Pokemon had their PP restored!")
                 input()
+        def use_computer(player):
+            self.computer = NPC("Computer")
+            ### If withdraw Pokemon selected
+            if len(player.party) < 6:
+                choice_mapping = {}
+                max_name_len = max([len(pokemon.battle_name) for pokemon in player.storage]) + 5
+                max_level_len = max([len(str(pokemon.level)) for pokemon in player.storage]) + 5
+                max_types_len = max([len(final_comma_ampersand(pokemon.types)) for pokemon in player.storage])
+                dprint("Which of the following Pokemon would you like to add to your party?")
+                for index, pokemon in enumerate(player.storage):
+                    print(
+                        "({})".format(index + 1),
+                        " {}".format(pokemon.battle_name).ljust(max_name_len),
+                        " Level: ", str(pokemon.level).ljust(max_level_len),
+                        " Type(s): ", final_comma_ampersand(pokemon.types).ljust(max_types_len)
+                        )
+                    choice_mapping[index + 1] = pokemon
+                choice = int(input())
+                chosen_pokemon = choice_mapping[choice]
+                player.storage.pop(player.storage.index(chosen_pokemon))
+                player.add_pokemon(chosen_pokemon)
+                dprint("{} moved {} out of storage and into their party.".format(player.name, chosen_pokemon.battle_name))
+            else:
+                self.computer.speak("No.")
+            input()
+
+
+
+class DoPokeMart(DoLocation):
+    items = {
+        "Poke Ball": 10,
+        "Great Ball": 30,
+        "Ultra Ball": 60,
+        "Master Ball": 750,
+        "Potion": 10,
+        "Super Potion": 20,
+        "Hyper Potion": 50,
+        "Max Potion": 80
+    }
+    def __init__(self, player):
+        self.location = "Pokemon Centre"
+        self.initiate_unique_functions()
+        self.unique_actions = {
+            "1": {
+                "display_text": "Buy items",
+                "function": buy_items
+            }
+        }
+        DoLocation.__init__(self, player)
+
+    def initiate_unique_functions(self):
+        global buy_items
+        self.vendor = NPC("Vendor")
+        def buy_items(player):
+            dprint("You have £{} to spend.".format(player.money))
+            self.vendor.speak("What would like to buy today?")
+            for i, (item, price) in enumerate(DoPokeMart.items.items()):
+                print("({}) {:13} £{}".format(i + 1, item, price))
+            print("(X) Nothing")
+            while True:
+                try:
+                    user_input = int(input())
+                    chosen_item = list(DoPokeMart.items.keys())[user_input - 1]
+                    self.vendor.speak("And how many {}s would you like?".format(chosen_item))
+                    while True:
+                        try:
+                            chosen_quantity = int(input())
+                            if chosen_quantity == 0:
+                                self.vendor.speak("Time waster!")
+                            else:
+                                total_price = DoPokeMart.items[chosen_item] * chosen_quantity
+                                if total_price > player.money:
+                                    self.vendor.speak("I'm afraid you don't have enough money for that.")
+                                else:
+                                    self.vendor.speak("{} {}s? That'll be £{} please.".format(chosen_quantity, chosen_item, total_price))
+                                    dprint("You hand over £{} and stash the {}s in your inventory.".format(total_price, chosen_item))
+                                    player.money -= total_price
+                                    dprint("You have £{} remaining.".format(player.money))
+                                    player.inventory.add_item(chosen_item, chosen_quantity)
+                            break
+                        except:
+                            self.vendor.speak("I beg pardon?")
+                    input()
+                    break
+                except:
+                    if user_input.upper() == "X":
+                        self.vendor.speak("I'll get back to my nap then.")
+                        break
+                    self.vendor.speak("I beg pardon?")
+
+
+
+
+
+
+
 
 # p = Player("Will")
 # p.add_pokemon(Pokemon("Bulbasaur"))

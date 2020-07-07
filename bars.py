@@ -26,7 +26,7 @@ def health_bar(hp, health, change, type):
     print("\r")
 
 def exp_bar(pokemon, exp_gain):
-    sleep_time = 1.5 / exp_gain
+    sleep_time = 1 / exp_gain
     exp = int(pokemon.exp)
     pokemon_level = pokemon.level
     start_exp = exp

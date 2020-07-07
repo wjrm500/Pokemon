@@ -94,7 +94,7 @@ class TakeTurn():
             if x.owner != battle.player:
                 for participant in battle.participants:
                     participant.gain_exp(x, len(battle.participants))
-                battle.participants = [battle.participants[-1]] # For experience sharing - ensures only most recently appended participant remains as a participant
+                battle.participants = [battle.participants[-1]]
             elif x.owner == battle.player:
                 battle.player.handle_faint(battle)
 

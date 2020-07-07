@@ -20,13 +20,21 @@ class Inventory():
         del self.items[item]
 
     def display_items(self, opponent = "NA"):
+        if opponent == "NA":
+            print("■" * 62)
+            dprint("Your wallet contains £{}.".format(self.player.money))
+            print("")
         if not self.items:
-            dprint("No items in bag!")
+            dprint("No items in inventory!")
             return
-        dprint("Your bag contains the following items...")
+        dprint("Your inventory contains the following items...")
         for i, (key, value) in enumerate(self.items.items()):
             dprint("({}) {} ({} thereof)".format(i + 1, key, value))
-        return self.select_item(opponent)
+        if opponent != "NA":
+            return self.select_item(opponent)
+        else:
+            print("■" * 62)
+            input()
 
     def select_item(self, opponent = "NA"):
         while True:

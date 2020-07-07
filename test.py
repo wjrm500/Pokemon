@@ -1,76 +1,27 @@
-from funcs import dprint
-import numpy as np
+from main_loop import MainLoop
+from person import Player
+from pokemon import Pokemon
 
-class Battle():
-    def __init__(self, player):
-        self.player = player
-        self.participants = [player.active_pokemon]
-        if self.player.has_pokemon_available():
-            self.intro()
-            self.battle_start()
-            self.battle_loop()
-            self.battle_end()
-        else:
-
-            dprint("You have no conscious Pokemon!")
-
-    def intro(self):
-        dprint("-" * 62)
-        dprint("IT'S BATTLE TIME")
-        dprint("-" * 62)
-
-class Battle_Trainer(Battle):
-    pass
-
-class Battle_Wild_Pokemon(Battle):
-    def __init__(self, player, wild_pokemon):
-        self.wild_pokemon = wild_pokemon
-        self.player_fled = False
-        self.wild_pokemon_fled = False
-        self.wild_pokemon_caught = False
-        Battle.__init__(self, player)
-
-    def speed_check(self):
-        if self.player.active_pokemon.get_stat("speed") > self.wild_pokemon.get_stat("speed"):
-            return (self.player, self.wild_pokemon)
-        else:
-            return (self.wild_pokemon, self.player)
-
-    def check_over(self):
-        if np.sum([pokemon.get_health() for pokemon in self.player.party]) == 0 or self.wild_pokemon.get_health() == 0 or self.player_fled or self.wild_pokemon_caught:
-            return True
-        return False
-
-    def battle_start(self):
-        dprint("Wild {} (Lv. {}) appeared!".format(self.wild_pokemon.species, self.wild_pokemon.level))
-        dprint("{} sent out {} (Lv. {})!".format(self.player.name, self.player.active_pokemon.battle_name, self.player.active_pokemon.level))
-        fastest = self.speed_check()[0]
-        placeholder_text = "{} has the speed advantage, which means {} will go first!"
-        dprint(placeholder_text.format(self.player.active_pokemon.battle_name, self.player.name) if fastest == self.player else placeholder_text.format(self.wild_pokemon.battle_name, "it"))
-        input()
-
-    def battle_loop(self):
-        while True:
-            fastest, slowest = self.speed_check()
-            fastest.take_turn(battle = self, opponent = slowest)
-            input()
-            if self.check_over():
-                break
-            slowest.take_turn(battle = self, opponent = fastest)
-            input()
-            if self.check_over():
-                break
-
-    def battle_end(self):
-        self.player.reset_party_stats()
-        if self.player_fled or self.wild_pokemon_fled or self.wild_pokemon_caught:
-            self.winner = None
-        else:
-            if np.sum([pokemon.get_health() for pokemon in self.player.party]) == 0:
-                self.winner = self.wild_pokemon
-            else:
-                self.winner = self.player
-            dprint("{} won the battle!".format(self.winner.name))
-        dprint("-" * 62)
-        input()
-        return self.winner
+p = Player("Will")
+player_poke = Pokemon("Linoone", level = 35)
+stored_poke1 = Pokemon("Metagross", level = 72)
+stored_poke2 = Pokemon("Bulbasaur", name = "Paul", level = 14)
+stored_poke3 = Pokemon("Sentret", name = "Graham", level = 9)
+stored_poke4 = Pokemon("Tyranitar", name = "Steve", level = 100)
+stored_poke5 = Pokemon("Altaria", level = 45)
+stored_poke6 = Pokemon("Pelipper", name = "Pip", level = 59)
+stored_poke7 = Pokemon("Wingull", level = 20)
+stored_poke8 = Pokemon("Lapras", level = 39)
+stored_pokes = [
+    stored_poke1,
+    stored_poke2,
+    stored_poke3,
+    stored_poke4,
+    stored_poke5,
+    stored_poke6,
+    stored_poke7,
+    stored_poke8,
+]
+p.add_pokemon(player_poke)
+p.add_pokemon(stored_pokes, to = "storage")
+MainLoop(p)

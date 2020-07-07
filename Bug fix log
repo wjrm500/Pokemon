@@ -22,3 +22,15 @@ to Player party. Does pickling an object pickle sub-objects?
 Took check_pokemon_fainted out of battle class
 
 Need to make sure that when a sixth pokemon is added, they get sent to PC
+
+moved Player and NPC as subclasses to Person
+added battle_trainer
+integrated new battle module around the code
+added pokemart and money
+rebuilt main loop so that it fitted do location model +
+allowed user to view pokemon + items
+added computer storage of pokemon
+
+still need to add switch active pokemon outside of battle
+deposit pokemon in storage
+earn money from NPCs

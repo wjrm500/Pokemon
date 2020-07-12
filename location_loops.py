@@ -55,34 +55,36 @@ class DoLocation():
                 break
 
     def display_options(self, player):
+        # while True:
+        dprint("What would you like to do?")
+        print("")
+        dprint("Location-specific options")
+        print("·" * 62)
+        for key, value in self.action_options.items():
+            if key.isnumeric():
+                dprint("({}) {}".format(key, value["display_text"]))
+        print("")
+        dprint("Generic options")
+        print("·" * 62)
+        for key, value in self.action_options.items():
+            if not key.isnumeric():
+                dprint("({}) {}".format(key, value["display_text"]))
+        print("")
         while True:
-            dprint("What would you like to do?")
-            print("")
-            dprint("Location-specific options")
-            print("·" * 62)
-            for key, value in self.action_options.items():
-                if key.isnumeric():
-                    dprint("({}) {}".format(key, value["display_text"]))
-            print("")
-            dprint("Generic options")
-            print("·" * 62)
-            for key, value in self.action_options.items():
-                if not key.isnumeric():
-                    dprint("({}) {}".format(key, value["display_text"]))
-            print("")
             choice = input().upper()
             try:
                 mapped_choice = self.action_options[choice]
+                display_text = mapped_choice["display_text"]
+                dprint("You selected \"{}\".".format(display_text))
+                if display_text == "View items in inventory":
+                    mapped_choice["function"](player.inventory)
+                else:
+                    mapped_choice["function"](player)
+                input()
+                break
             except:
                 dprint("Invalid input detected. Please try again.")
-                break
-            display_text = mapped_choice["display_text"]
-            dprint("You selected \"{}\".".format(display_text))
-            if display_text == "View items in inventory":
-                mapped_choice["function"](player.inventory)
-            else:
-                mapped_choice["function"](player)
-            break
+                dprint("What would you like to do?")
 
     def initiate_generic_functions(self):
         global leave
@@ -189,38 +191,108 @@ class DoPokemonCentre(DoLocation):
             for pokemon in player.party:
                 pokemon.fainted = False
                 pokemon.stats["hp"]["temp"] = pokemon.stats["hp"]["perm"]
-                dprint("All Pokemon healed to full health!")
                 for move in pokemon.moves.keys():
                     pokemon.moves[move]["temp"] = pokemon.moves[move]["perm"]
-                dprint("All Pokemon had their PP restored!")
-                input()
+            dprint("All Pokemon healed to full health!")
+            dprint("All Pokemon had their PP restored!")
         def use_computer(player):
             self.computer = NPC("Computer")
-            ### If withdraw Pokemon selected
-            if len(player.party) < 6:
-                choice_mapping = {}
-                max_name_len = max([len(pokemon.battle_name) for pokemon in player.storage]) + 5
-                max_level_len = max([len(str(pokemon.level)) for pokemon in player.storage]) + 5
-                max_types_len = max([len(final_comma_ampersand(pokemon.types)) for pokemon in player.storage])
-                dprint("Which of the following Pokemon would you like to add to your party?")
-                for index, pokemon in enumerate(player.storage):
-                    print(
-                        "({})".format(index + 1),
-                        " {}".format(pokemon.battle_name).ljust(max_name_len),
-                        " Level: ", str(pokemon.level).ljust(max_level_len),
-                        " Type(s): ", final_comma_ampersand(pokemon.types).ljust(max_types_len)
-                        )
-                    choice_mapping[index + 1] = pokemon
-                choice = int(input())
-                chosen_pokemon = choice_mapping[choice]
-                player.storage.pop(player.storage.index(chosen_pokemon))
-                player.add_pokemon(chosen_pokemon)
-                dprint("{} moved {} out of storage and into their party.".format(player.name, chosen_pokemon.battle_name))
-            else:
-                self.computer.speak("No.")
-            input()
-
-
+            self.computer.speak("How may I be of service?")
+            dprint("(1) Withdraw Pokemon")
+            dprint("(2) Deposit Pokemon")
+            print("")
+            dprint("(X) Exit computer")
+            while True:
+                user_input = input()
+                try:
+                    if user_input == "1":
+                        ### If withdraw Pokemon selected
+                        if len(player.party) < 6 and len(player.storage) > 0:
+                            choice_mapping = {}
+                            max_name_len = max([len(pokemon.battle_name) for pokemon in player.storage]) + 5
+                            max_level_len = max([len(str(pokemon.level)) for pokemon in player.storage]) + 5
+                            max_types_len = max([len(final_comma_ampersand(pokemon.types)) for pokemon in player.storage])
+                            dprint("Which of the following Pokemon would you like to add to your party?")
+                            for index, pokemon in enumerate(player.storage):
+                                print(
+                                    "({})".format(index + 1),
+                                    "{}".format(pokemon.battle_name).ljust(max_name_len),
+                                    " Level: ", str(pokemon.level).ljust(max_level_len),
+                                    " Type(s): ", final_comma_ampersand(pokemon.types).ljust(max_types_len)
+                                    )
+                                choice_mapping[index + 1] = pokemon
+                            print("")
+                            print("(X) Exit computer")
+                            while True:
+                                user_input = input()
+                                if user_input.upper() == "X":
+                                    self.computer.speak("Bye!")
+                                    break
+                                elif user_input.isnumeric():
+                                    try:
+                                        user_input = int(user_input)
+                                        chosen_pokemon = choice_mapping[user_input]
+                                        player.storage.pop(player.storage.index(chosen_pokemon))
+                                        player.add_pokemon(chosen_pokemon)
+                                        dprint("{} moved {} out of storage and into their party.".format(player.name, chosen_pokemon.battle_name))
+                                        break
+                                    except:
+                                        self.computer.speak("Stupid human! Input a valid keypress.")
+                                else:
+                                    self.computer.speak("Stupid human! Input a valid keypress.")
+                        else:
+                            if len(player.party) >= 6 and len(player.storage) == 0:
+                                self.computer.speak("Your party is at full capacity, and you have no Pokemon in storage to withdraw.")
+                            elif len(player.party) >= 6:
+                                self.computer.speak("Your party is at full capacity.")
+                            elif len(player.storage) == 0:
+                                self.computer.speak("You have no Pokemon in storage to withdraw.")
+                        break
+                    elif user_input == "2":
+                        if len(player.party) > 1:
+                            choice_mapping = {}
+                            max_name_len = max([len(pokemon.battle_name) for pokemon in player.party]) + 5
+                            max_level_len = max([len(str(pokemon.level)) for pokemon in player.party]) + 5
+                            max_types_len = max([len(final_comma_ampersand(pokemon.types)) for pokemon in player.party])
+                            dprint("Which of the following Pokemon would you like to deposit in storage?")
+                            for index, pokemon in enumerate(player.party):
+                                print(
+                                    "({})".format(index + 1),
+                                    "{}".format(pokemon.battle_name).ljust(max_name_len),
+                                    " Level: ", str(pokemon.level).ljust(max_level_len),
+                                    " Type(s): ", final_comma_ampersand(pokemon.types).ljust(max_types_len)
+                                    )
+                                choice_mapping[index + 1] = pokemon
+                            print("")
+                            print("(X) Exit computer")
+                            while True:
+                                user_input = input()
+                                if user_input.upper() == "X":
+                                    self.computer.speak("Bye!")
+                                    break
+                                elif user_input.isnumeric():
+                                    try:
+                                        user_input = int(user_input)
+                                        chosen_pokemon = choice_mapping[user_input]
+                                        player.party.pop(player.party.index(chosen_pokemon))
+                                        player.storage.append(chosen_pokemon)
+                                        player.active_pokemon = player.party[0]
+                                        dprint("{} moved {} out of their party and into storage.".format(player.name, chosen_pokemon.battle_name))
+                                        break
+                                    except:
+                                        self.computer.speak("Stupid human! Input a valid keypress.")
+                                else:
+                                    self.computer.speak("Stupid human! Input a valid keypress.")
+                        else:
+                            self.computer.speak("You need at least two Pokemon in your party to make a deposit.")
+                        break
+                    elif user_input.upper() == "X":
+                        self.computer.speak("Bye!")
+                        break
+                    else:
+                        self.computer.speak("Stupid human! Input a valid keypress.")
+                except:
+                    self.computer.speak("Stupid human! Input a valid keypress.")
 
 class DoPokeMart(DoLocation):
     items = {
@@ -276,7 +348,6 @@ class DoPokeMart(DoLocation):
                             break
                         except:
                             self.vendor.speak("I beg pardon?")
-                    input()
                     break
                 except:
                     if user_input.upper() == "X":
@@ -284,8 +355,38 @@ class DoPokeMart(DoLocation):
                         break
                     self.vendor.speak("I beg pardon?")
 
+class DoGym(DoLocation):
+    def __init__(self, player):
+        self.location = "Gym"
+        self.initiate_unique_functions()
+        self.unique_actions = {
+            "1": {
+                "display_text": "Bug gym",
+                "function": bug_gym
+            }
+        }
+        DoLocation.__init__(self, player)
 
-
+    def initiate_unique_functions(self):
+        global bug_gym
+        def bug_gym(player):
+            trainer1 = NPC("Calico", bounty = 50)
+            pokemon_names = [
+                "Butterfree",
+                # "Beedrill",
+                # "Parasect",
+                # "Venomoth"
+            ]
+            random.shuffle(pokemon_names)
+            min_level, max_level = 20, 25
+            for pokemon_name in pokemon_names:
+                pokemon = Pokemon(pokemon_name, level = random.randint(min_level, max_level))
+                trainer1.add_pokemon(pokemon)
+            final_pokemon = Pokemon("Scyther", level = 30)
+            trainer1.add_pokemon(final_pokemon)
+            # trainers.update({"1": trainer1})
+            Battle_Trainer(player, trainer1)
+            # Sessid, Carabus
 
 
 
@@ -299,20 +400,7 @@ class DoPokeMart(DoLocation):
 #     dprint("Welcome to the gym")
 #     # Idea could be that you sequentially fight all the gym leaders before League
 #     """
-#     Bug Gym
-#     Fire Gym
-#     Grass Gym
-#     Water Gym
-#     Psychic Gym
-#     Fighting Gym
-#     Ice Gym
-#     Rock Gym
-#     Normal Gym
-#     Steel Gym
-#     Dragon Gym
-#     Electric Gym
-#     Flying Gym
-#     Ground Gym
+#     One gym
 #     Pokemon League (Locked)
 #     Do gyms in any order. For every two gyms you do, the difficulty of remaining gyms increases by one stage. Therefore you can choose any order and gyms will still get more difficult.
 #     """

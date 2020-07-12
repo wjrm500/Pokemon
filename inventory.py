@@ -34,7 +34,6 @@ class Inventory():
             return self.select_item(opponent)
         else:
             print("■" * 62)
-            input()
 
     def select_item(self, opponent = "NA"):
         while True:

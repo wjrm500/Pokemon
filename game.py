@@ -1,8 +1,9 @@
-from funcs import dprint
+from funcs import dprint, dprint_setup
 import pickle
 import os
 import pdb
 import shutil
+import sys
 
 def main_menu():
     while True:
@@ -11,6 +12,7 @@ def main_menu():
         dprint("(N) Start new game")
         dprint("(L) Load existing game")
         dprint("(D) Delete existing game")
+        dprint("(S) Settings")
         dprint("(Q) Quit game")
         choice = input()
         if choice.lower() == "n":
@@ -19,6 +21,8 @@ def main_menu():
             load_game()
         elif choice.lower() == "d":
             delete_game()
+        elif choice.lower() ==  "s":
+            dprint_setup()
         elif choice.lower() == "q":
             quit_game()
         else:
@@ -119,4 +123,4 @@ def delete_game():
         input()
 
 def quit_game():
-    exit()
+    sys.exit()

@@ -2,6 +2,7 @@ from funcs import dprint
 from location_loops import *
 from save_game import *
 from person import Player
+import sys
 
 class MainLoop():
     def __init__(self, player):
@@ -17,6 +18,10 @@ class MainLoop():
             "3": {
                 "display_text": "Go to PokeMart",
                 "function": DoPokeMart
+            },
+            "4": {
+                "display_text": "Go to Gym",
+                "function": DoGym
             },
             "P": {
                 "display_text": "View Pokemon in party",
@@ -40,31 +45,34 @@ class MainLoop():
             }
         }
         while True:
+            dprint("What would you like to do?")
+            print("")
+            dprint("Go somewhere")
+            print("·" * 62)
+            for key, value in self.action_options.items():
+                if key.isnumeric():
+                    dprint("({}) {}".format(key, value["display_text"]))
+            print("")
+            dprint("Do something")
+            print("·" * 62)
+            for key, value in self.action_options.items():
+                if not key.isnumeric():
+                    dprint("({}) {}".format(key, value["display_text"]))
+            print("")
             while True:
-                dprint("What would you like to do?")
-                print("")
-                dprint("Go somewhere")
-                print("·" * 62)
-                for key, value in self.action_options.items():
-                    if key.isnumeric():
-                        dprint("({}) {}".format(key, value["display_text"]))
-                print("")
-                dprint("Do something")
-                print("·" * 62)
-                for key, value in self.action_options.items():
-                    if not key.isnumeric():
-                        dprint("({}) {}".format(key, value["display_text"]))
-                print("")
                 choice = input().upper()
                 try:
                     mapped_choice = self.action_options[choice]
+                    display_text = mapped_choice["display_text"]
+                    dprint("You selected \"{}\".".format(display_text))
+                    if display_text == "View items in inventory":
+                        mapped_choice["function"](player.inventory)
+                    else:
+                        mapped_choice["function"](player)
+                    # input()
+                    break
+                except SystemExit:
+                    sys.exit()
                 except:
                     dprint("Invalid input detected. Please try again.")
-                    break
-                display_text = mapped_choice["display_text"]
-                dprint("You selected \"{}\".".format(display_text))
-                if display_text == "View items in inventory":
-                    mapped_choice["function"](player.inventory)
-                else:
-                    mapped_choice["function"](player)
-                break
+                    dprint("What would you like to do?")

@@ -4,6 +4,7 @@ import pickle
 import numpy as np
 from inventory import Inventory
 import random
+import pdb
 
 pickle_in = open("moves_by_level.pickle", "rb")
 moves_by_level = pickle.load(pickle_in)
@@ -36,6 +37,7 @@ class Person():
             else:
                 self.party.append(poke)
                 self.active_pokemon = self.party[0]
+                dprint("{} was added to your party.".format(poke.battle_name))
 
     def release_pokemon(self, pokemon):
         self.party.remove(pokemon)
@@ -46,9 +48,32 @@ class Person():
 
     def display_pokemon(self):
         print("■" * 62)
+        switch_text = "Press "
         for pokemon in self.party:
             pokemon.display()
-        input()
+            if self.party.index(pokemon) == 0:
+                text_to_append = ""
+            elif self.party.index(pokemon) == len(self.party) - 1:
+                if len(self.party) == 2:
+                    text_to_append = "{} to switch in {}.".format(self.party.index(pokemon), pokemon.battle_name)
+                else:
+                    text_to_append = "or {} to switch in {}.".format(self.party.index(pokemon), pokemon.battle_name)                    
+            else:
+                text_to_append = "{} to switch in {}, ".format(self.party.index(pokemon), pokemon.battle_name)
+            switch_text += text_to_append
+        if len(self.party) > 1:
+            dprint(switch_text)
+            user_input = input()
+            if user_input.isnumeric():
+                try:
+                    user_input = int(user_input)
+                    self.party.insert(0, self.party.pop(user_input))
+                    self.active_pokemon = self.party[0]
+                    dprint("{} switched in {} (Lv. {})!".format(self.name, self.active_pokemon.battle_name, self.active_pokemon.level))
+                except:
+                    dprint("Invalid input detected.")
+            else:
+                dprint("No switches made; {} remains active.".format(self.active_pokemon.battle_name))
 
     def reset_party_stats(self):
         for pokemon in self.party:
@@ -86,7 +111,7 @@ class Player(Person):
                     self.active_pokemon = self.party[0]
                     if self.active_pokemon not in battle.participants:
                         battle.participants.append(self.active_pokemon)
-                    dprint("{} switched in {}!".format(self.name, self.active_pokemon.name))
+                    dprint("{} switched in {} (Lv. {})!".format(self.name, self.active_pokemon.battle_name, self.active_pokemon.level))
                     return "switched"
                 else:
                     if type == "voluntary":
@@ -155,20 +180,20 @@ class Player(Person):
         self.switch_pokemon(battle, type = "enforced")
 
 class NPC(Person):
-    def __init__(self, name):
+    def __init__(self, name, bounty = 25):
         super().__init__(name)
+        self.bounty = bounty
 
     def speak(self, words):
         dprint("{}: \"{}\"".format(self.name, words))
 
     def switch_pokemon(self, battle, type = "voluntary"):
         if len([pokemon for pokemon in self.party[1:] if not pokemon.fainted]) > 0:
-            chosen_pokemon = random.choice([pokemon for pokemon in self.party[1:] if not pokemon.fainted])
+            # chosen_pokemon = random.choice([pokemon for pokemon in self.party[1:] if not pokemon.fainted])
+            chosen_pokemon = [pokemon for pokemon in self.party[1:] if not pokemon.fainted][0]
             self.party.insert(0, self.party.pop(self.party.index(chosen_pokemon)))
             self.active_pokemon = self.party[0]
-            if self.active_pokemon not in battle.participants:
-                battle.participants.append(self.active_pokemon)
-            dprint("{} switched in {}!".format(self.name, self.active_pokemon.name))
+            dprint("{} switched in {} (Lv. {})!".format(self.name, self.active_pokemon.battle_name, self.active_pokemon.level))
             return "switched"
         else:
             if type == "voluntary":

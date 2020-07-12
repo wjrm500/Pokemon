@@ -95,8 +95,8 @@ class TakeTurn():
                 for participant in battle.participants:
                     participant.gain_exp(x, len(battle.participants))
                 battle.participants = [battle.participants[-1]]
-            elif x.owner == battle.player:
-                battle.player.handle_faint(battle)
+            if x.owner != "NA":
+                x.owner.handle_faint(battle)
 
     def see_move_details(attacking_pokemon):
         nums = list(range(1, 5))
@@ -128,12 +128,16 @@ class TakeTurn():
 
     def throw_pokeball(player, wild_pokemon, ball_type = "Poke Ball"):
         def pokemon_caught(player, wild_pokemon):
-            player.add_pokemon(wild_pokemon)
             dprint("{} was caught!".format(wild_pokemon.species))
-            dprint("Care to name the little bugger?")
-            dprint("Input name:")
-            name = input()
-            wild_pokemon.name = name
+            while True:
+                dprint("Name your {}:".format(wild_pokemon.species))
+                name = input()
+                if len(name) >= 2 and len(name) <= 15 and name.isalpha():
+                    break
+                else:
+                    dprint("Please enter a valid name. Use only alphabetic characters and keep the length between 2 and 15 characters.")
+            wild_pokemon.take_name(name)
+            player.add_pokemon(wild_pokemon)
         dprint("{} threw a {} at {}!".format(player.name, ball_type, wild_pokemon.species))
         if ball_type == "Master Ball":
             dprint("The Master Ball shook once...".format(ball_type))

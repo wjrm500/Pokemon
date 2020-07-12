@@ -6,7 +6,7 @@ import random
 import sys
 from main_loop import MainLoop
 
-verbose = False
+verbose = True
 
 def beginning(player_name):
     p = Player(player_name)

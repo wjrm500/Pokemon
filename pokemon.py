@@ -43,6 +43,10 @@ class Pokemon():
         self.fainted = False
         self.guarantee_attacking_move()
 
+    def take_name(self, name):
+        self.name = name.capitalize()
+        self.battle_name = "{} ({})".format(self.name, self.species) if self.name != self.species else self.species
+
     def non_hp_stat_refresh(self):
         for key, value in self.stats.items():
             if key != "hp":

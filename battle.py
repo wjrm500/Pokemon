@@ -1,6 +1,8 @@
 from funcs import dprint
 import numpy as np
 import pdb
+import os
+from location_loops import *
 
 class Battle():
     def __init__(self, player):
@@ -57,11 +59,19 @@ class Battle_Trainer(Battle):
 
     def battle_end(self):
         self.player.reset_party_stats()
+        for pokemon in self.trainer.party:
+            pokemon.fainted = False
+            pokemon.stats["hp"]["temp"] = pokemon.stats["hp"]["perm"]
+            for move in pokemon.moves.keys():
+                pokemon.moves[move]["temp"] = pokemon.moves[move]["perm"]
         if np.sum([pokemon.get_health() for pokemon in self.player.party]) == 0:
             self.winner = self.trainer
         else:
             self.winner = self.player
         dprint("{} won the battle!".format(self.winner.name))
+        if self.winner == self.player:
+            self.player.money += self.trainer.bounty
+            dprint("{} pocketed £{}.".format(self.player.name, self.trainer.bounty))
         dprint("-" * 62)
         input()
         return self.winner
@@ -104,5 +114,4 @@ class Battle_Wild_Pokemon(Battle):
                 self.winner = self.player
             dprint("{} won the battle!".format(self.winner.name))
         dprint("-" * 62)
-        input()
         return self.winner

@@ -4,7 +4,8 @@ from pokemon import Pokemon
 from location_loops import *
 
 p = Player("Will")
-player_poke = Pokemon("Pelipper", name = "Pip", level = 59)
+player_poke = Pokemon("Weedle", name = "Pip", level = 6)
+player_poke.level_up()
 # stored_poke1 = Pokemon("Metagross", level = 72)
 # stored_poke2 = Pokemon("Bulbasaur", name = "Paul", level = 14)
 # stored_poke3 = Pokemon("Sentret", name = "Graham", level = 9)
@@ -24,8 +25,6 @@ player_poke = Pokemon("Pelipper", name = "Pip", level = 59)
 #     stored_poke8,
 # ]
 p.add_pokemon(player_poke)
-p.add_pokemon(Pokemon("Ivysaur", level = 25))
-p.add_pokemon(Pokemon("Charmeleon", level = 25))
-p.add_pokemon(Pokemon("Wartortle", level = 25))
+# wild_poke = Pokemon("Rattata", level = 5)
 # p.add_pokemon(stored_pokes, to = "storage")
-DoPokemonCentre(p)
+# MainLoop(p)

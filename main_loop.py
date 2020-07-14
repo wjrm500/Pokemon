@@ -75,4 +75,4 @@ class MainLoop():
                     sys.exit()
                 except:
                     dprint("Invalid input detected. Please try again.")
-                    dprint("What would you like to do?")
+                    break

@@ -40,9 +40,13 @@ at top of each screen. should also make sure invalid input
 causes a loop back to "What would you like to do?" rather than
 re-displaying all options
 
+withdraw / deposit multiple pokemon
+
 more gyms, keep track of meetings
 
 bug - Xing out of computer or in fact any menu
 maybe need to show options more often. when invalid input detected it's okay not to show options again
 but otherwise probably should
 no longer possible to quit game
+
+add more NPCs and wild pokes

@@ -63,3 +63,8 @@ catch_rates.drop(columns = ["pokedex_num"], inplace = True)
 catch_rates.loc[28, "species"] = "Nidoran♀"
 catch_rates.loc[32, "species"] = "Nidoran♂"
 catch_rates.set_index("species", inplace = True)
+
+evolutions = pd.read_csv("pokemon_evolutions.csv", encoding = "latin-1")
+evolutions.loc[17, "from"] = "Nidoran♀"
+evolutions.loc[18, "from"] = "Nidoran♂"
+evolutions.set_index("from", inplace = True)

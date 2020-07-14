@@ -6,6 +6,7 @@ from battle import *
 from person import *
 import pdb
 from save_game import *
+import sys
 
 class DoLocation():
     def __init__(self, player):
@@ -55,7 +56,6 @@ class DoLocation():
                 break
 
     def display_options(self, player):
-        # while True:
         dprint("What would you like to do?")
         print("")
         dprint("Location-specific options")
@@ -82,9 +82,11 @@ class DoLocation():
                     mapped_choice["function"](player)
                 input()
                 break
+            except SystemExit:
+                sys.exit()
             except:
                 dprint("Invalid input detected. Please try again.")
-                dprint("What would you like to do?")
+                break
 
     def initiate_generic_functions(self):
         global leave

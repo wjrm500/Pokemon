@@ -1,4 +1,4 @@
-from pokemon_csv import base_stats, natures, exp_by_level, growth_patterns, types, type_effectiveness, exp_yield
+from pokemon_csv import base_stats, natures, exp_by_level, growth_patterns, types, type_effectiveness, exp_yield, evolutions
 from pokemon_stat_calc import StatCalculator
 from funcs import dprint
 import random
@@ -7,6 +7,8 @@ import string
 import numpy as np
 from taketurn import TakeTurn
 from bars import exp_bar
+import time
+import pdb
 
 pickle_in = open("moves_by_level.pickle", "rb")
 moves_by_level = pickle.load(pickle_in)
@@ -53,6 +55,7 @@ class Pokemon():
                 self.stats[key]["temp"] = self.stats[key]["perm"]
 
     def guarantee_attacking_move(self): # Generate a set of moves for the Pokemon
+        # TODO: What if there is no attacking move e.g. Kakuna
         df = moves_by_level[self.species] # Bring in moves learnt by level for particular species
         df = df[df["level"] <= self.level].copy() # Only look at moves possible at Pokemon's level
         def damage_dealing(move): # Function to create a filtered dataframe containing only damage-dealing moves
@@ -60,11 +63,15 @@ class Pokemon():
                 return move
             else:
                 pass
-        damaging_df = df["move"].apply(damage_dealing) # Creating this dataframe
-        best_damaging_move = df.iloc[damaging_df.last_valid_index()]["move"] # Picking out highest-level damage-dealing move to guarantee it is retained
-        other_moves = df[df["move"] != best_damaging_move]["move"].tail(3) # Picking out up to three highest-level moves that are not the best damaging move, to pad moveset
-        self.moves = {best_damaging_move: int(move_details[best_damaging_move]["pp"])} # Adding best damaging move to move dictionary, along with its PP
-        self.moves.update({move: int(move_details[move]["pp"]) for move in list(other_moves)}) # Adding remaining moves to move dictionary, along with their PP
+        try:
+            damaging_df = df["move"].apply(damage_dealing) # Creating this dataframe
+            best_damaging_move = df.iloc[damaging_df.last_valid_index()]["move"] # Picking out highest-level damage-dealing move to guarantee it is retained
+            other_moves = df[df["move"] != best_damaging_move]["move"].tail(3) # Picking out up to three highest-level moves that are not the best damaging move, to pad moveset
+            self.moves = {best_damaging_move: int(move_details[best_damaging_move]["pp"])} # Adding best damaging move to move dictionary, along with its PP
+            self.moves.update({move: int(move_details[move]["pp"]) for move in list(other_moves)}) # Adding remaining moves to move dictionary, along with their PP
+        except:
+            pdb.set_trace()
+            self.moves = {move: int(move_details[move]["pp"]) for move in list(moves_by_level[self.species]["move"])}
         for key, value in self.moves.items():
             self.moves[key] = {"temp": value, "perm": value}
 
@@ -130,11 +137,28 @@ class Pokemon():
     def level_up(self):
         self.level += 1
         dprint("{} went from Lv. {} to Lv. {}!".format(self.battle_name, self.level - 1, self.level))
+        if self.level >= evolutions.loc[self.species, "level"]:
+            self.evolve()
+        self.guarantee_attacking_move()
         self.exp_next_level = exp_by_level.loc[self.level + 1, self.growth_pattern]
         remaining_health_pct = self.get_stat("hp") / self.get_stat("hp", type = "perm")
         self.stats = StatCalculator(self.level, self.ivs, self.nature, self.base_stats)
         for key, value in self.stats.items():
             self.stats[key] = {"temp": int(value * remaining_health_pct), "perm": int(value)}
+
+    def evolve(self):
+        prevolution_battle_name = self.battle_name
+        dprint("{} is evolving!".format(prevolution_battle_name))
+        for i in range(3):
+            dprint("...")
+            time.sleep(0.5)
+        evolution_name = evolutions.loc[self.species, "to"]
+        self.species = evolution_name
+        self.battle_name = "{} ({})".format(self.name, self.species) if self.name != self.species else self.species
+        self.base_stats = base_stats.loc[self.species].to_dict()
+        self.base_exp_yield = exp_yield.loc[self.species][0]
+        self.types = [x.capitalize() for x in list(types.loc[self.species]) if str(x) != "nan"]
+        dprint("{} evolved into {}!".format(prevolution_battle_name, self.species))
 
     def take_turn(self, battle, opponent):
         mapped_choice = random.choice(list(self.moves.keys()))

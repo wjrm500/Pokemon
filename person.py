@@ -37,7 +37,7 @@ class Person():
             else:
                 self.party.append(poke)
                 self.active_pokemon = self.party[0]
-                dprint("{} was added to your party.".format(poke.battle_name))
+                # dprint("{} was added to your party.".format(poke.battle_name))
 
     def release_pokemon(self, pokemon):
         self.party.remove(pokemon)
@@ -57,7 +57,7 @@ class Person():
                 if len(self.party) == 2:
                     text_to_append = "{} to switch in {}.".format(self.party.index(pokemon), pokemon.battle_name)
                 else:
-                    text_to_append = "or {} to switch in {}.".format(self.party.index(pokemon), pokemon.battle_name)                    
+                    text_to_append = "or {} to switch in {}.".format(self.party.index(pokemon), pokemon.battle_name)
             else:
                 text_to_append = "{} to switch in {}, ".format(self.party.index(pokemon), pokemon.battle_name)
             switch_text += text_to_append
@@ -67,9 +67,12 @@ class Person():
             if user_input.isnumeric():
                 try:
                     user_input = int(user_input)
-                    self.party.insert(0, self.party.pop(user_input))
-                    self.active_pokemon = self.party[0]
-                    dprint("{} switched in {} (Lv. {})!".format(self.name, self.active_pokemon.battle_name, self.active_pokemon.level))
+                    if not self.party[user_input].fainted:
+                        self.party.insert(0, self.party.pop(user_input))
+                        self.active_pokemon = self.party[0]
+                        dprint("{} switched in {} (Lv. {})!".format(self.name, self.active_pokemon.battle_name, self.active_pokemon.level))
+                    else: # Pokemon cannot be switched in as fainted
+                        dprint("{} is unconscious, and therefore cannot be switched in!".format(self.party[user_input].battle_name))
                 except:
                     dprint("Invalid input detected.")
             else:

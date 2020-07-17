@@ -29,7 +29,7 @@ class Inventory():
             return
         dprint("Your inventory contains the following items...")
         for i, (key, value) in enumerate(self.items.items()):
-            dprint("({}) {} ({} thereof)".format(i + 1, key, value))
+            print("({}) {} (×{})".format(i + 1, key, value))
         if opponent != "NA":
             return self.select_item(opponent)
         else:

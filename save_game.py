@@ -19,6 +19,7 @@ def save_game(player):
 def exit_to_main_menu(player):
     dprint("{} exited to the main menu.".format(player.name))
     dprint("-" * 50)
+    input()
     main_menu()
 
 def save_game_and_exit_to_main_menu(player):

@@ -25,13 +25,13 @@ class Battle():
         while True:
             fastest, slowest = self.speed_check()
             fastest.take_turn(battle = self, opponent = slowest)
-            input()
             if self.check_over():
                 break
+            input()
             slowest.take_turn(battle = self, opponent = fastest)
-            input()
             if self.check_over():
                 break
+            input()
 
 class Battle_Trainer(Battle):
     def __init__(self, player, trainer):
@@ -73,8 +73,6 @@ class Battle_Trainer(Battle):
             self.player.money += self.trainer.bounty
             dprint("{} pocketed £{}.".format(self.player.name, self.trainer.bounty))
         dprint("-" * 62)
-        input()
-        return self.winner
 
 class Battle_Wild_Pokemon(Battle):
     def __init__(self, player, wild_pokemon):
@@ -114,4 +112,3 @@ class Battle_Wild_Pokemon(Battle):
                 self.winner = self.player
             dprint("{} won the battle!".format(self.winner.name))
         dprint("-" * 62)
-        return self.winner

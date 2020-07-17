@@ -51,13 +51,13 @@ class MainLoop():
             print("·" * 62)
             for key, value in self.action_options.items():
                 if key.isnumeric():
-                    dprint("({}) {}".format(key, value["display_text"]))
+                    print("({}) {}".format(key, value["display_text"]))
             print("")
             dprint("Do something")
             print("·" * 62)
             for key, value in self.action_options.items():
                 if not key.isnumeric():
-                    dprint("({}) {}".format(key, value["display_text"]))
+                    print("({}) {}".format(key, value["display_text"]))
             print("")
             while True:
                 choice = input().upper()
@@ -67,9 +67,9 @@ class MainLoop():
                     dprint("You selected \"{}\".".format(display_text))
                     if display_text == "View items in inventory":
                         mapped_choice["function"](player.inventory)
+                        input()
                     else:
                         mapped_choice["function"](player)
-                    # input()
                     break
                 except SystemExit:
                     sys.exit()

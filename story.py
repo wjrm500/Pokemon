@@ -1,12 +1,11 @@
 from person import Player, NPC
 from pokemon import Pokemon
-from funcs import dprint, final_comma_ampersand
+from funcs import dprint, final_comma_ampersand, verbose
 from battle import Battle_Trainer
 import random
 import sys
 from main_loop import MainLoop
-
-verbose = True
+import pdb
 
 def beginning(player_name):
     p = Player(player_name)
@@ -130,7 +129,8 @@ Just joking! You chose {}! Care to give the little bugger a name?""".format(poke
         fight_choice = input()
         if len(fight_choice) > 0:
             if fight_choice.lower()[0] == "y":
-                winner = Battle_Trainer(p, rival)
+                battle = Battle_Trainer(p, rival)
+                winner = battle.winner
                 break
             elif fight_choice.lower()[0] == "n":
                 if verbose == True:

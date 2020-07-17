@@ -1,4 +1,4 @@
-from funcs import dprint, dprint_setup
+from funcs import dprint, verbosity_setup, dprint_setup
 import pickle
 import os
 import pdb
@@ -9,11 +9,11 @@ def main_menu():
     while True:
         dprint("Welcome to my homemade text-based Pokemon game!")
         dprint("What would you like to do?")
-        dprint("(N) Start new game")
-        dprint("(L) Load existing game")
-        dprint("(D) Delete existing game")
-        dprint("(S) Settings")
-        dprint("(Q) Quit game")
+        print("(N) Start new game")
+        print("(L) Load existing game")
+        print("(D) Delete existing game")
+        print("(S) Settings")
+        print("(Q) Quit game")
         choice = input()
         if choice.lower() == "n":
             new_game()
@@ -22,7 +22,7 @@ def main_menu():
         elif choice.lower() == "d":
             delete_game()
         elif choice.lower() ==  "s":
-            dprint_setup()
+            settings()
         elif choice.lower() == "q":
             quit_game()
         else:
@@ -53,7 +53,7 @@ def load_game(): ### TODO Add total played time next to each load option
     if len(options) > 0:
         dprint("Which game would you like to load?")
         for index, option in enumerate(options):
-            dprint("({}) {}".format(index + 1, option))
+            print("({}) {}".format(index + 1, option))
         print("")
         dprint("(X) Exit to main menu")
         while True:
@@ -87,7 +87,7 @@ def delete_game():
         while True:
             dprint("Which game would you like to delete?")
             for index, option in enumerate(options):
-                dprint("({}) {}".format(index + 1, option))
+                print("({}) {}".format(index + 1, option))
             print("")
             dprint("(X) Exit to main menu")
             choice = input()
@@ -121,6 +121,30 @@ def delete_game():
     else:
         dprint("No saved games to delete.")
         input()
+
+def settings():
+    dprint("Which setting would you like to change?")
+    settings = {
+        "1": {
+            "Verbosity": verbosity_setup
+            },
+        "2": {
+            "Text speed": dprint_setup
+        }
+    }
+    for outer_key, dict in settings.items():
+        for inner_key in dict.keys():
+            print("({}) {}".format(outer_key, inner_key))
+    while True:
+        user_input = input()
+        try:
+            selection = list(settings[user_input].keys())[0]
+            dprint("You selected {}.".format(selection))
+            settings[user_input][selection]()
+        except:
+            dprint("Invalid input detected.")
+        input()
+        break
 
 def quit_game():
     sys.exit()

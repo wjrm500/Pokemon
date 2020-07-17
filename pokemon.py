@@ -19,7 +19,6 @@ move_details = pickle.load(pickle_in)
 pickle_in.close()
 
 class Pokemon():
-    ### TODO evolve function
     ### TODO history subclass? Things like total pokemon defeated, total faints, total move usage, total damage inflicted and taken, pokemon defeated with type breakdown
     def __init__(self, species, name = None, level = 5):
         self.species = species
@@ -38,6 +37,7 @@ class Pokemon():
         self.stats = StatCalculator(self.level, self.ivs, self.nature, self.base_stats)
         for key, value in self.stats.items():
             self.stats[key] = {"temp": int(value), "perm": int(value)}
+        self.total_stat = np.sum([stats["perm"] for stat_name, stats in self.stats.items()])
         self.growth_pattern = growth_patterns.loc[self.species][0]
         self.exp = exp_by_level.loc[self.level, self.growth_pattern]
         self.exp_next_level = 0 if self.level == 100 else exp_by_level.loc[self.level + 1, self.growth_pattern]
@@ -70,7 +70,6 @@ class Pokemon():
             self.moves = {best_damaging_move: int(move_details[best_damaging_move]["pp"])} # Adding best damaging move to move dictionary, along with its PP
             self.moves.update({move: int(move_details[move]["pp"]) for move in list(other_moves)}) # Adding remaining moves to move dictionary, along with their PP
         except:
-            pdb.set_trace()
             self.moves = {move: int(move_details[move]["pp"]) for move in list(moves_by_level[self.species]["move"])}
         for key, value in self.moves.items():
             self.moves[key] = {"temp": value, "perm": value}
@@ -145,6 +144,7 @@ class Pokemon():
         self.stats = StatCalculator(self.level, self.ivs, self.nature, self.base_stats)
         for key, value in self.stats.items():
             self.stats[key] = {"temp": int(value * remaining_health_pct), "perm": int(value)}
+        self.total_stat = np.sum([stats["perm"] for stat_name, stats in self.stats.items()])
 
     def evolve(self):
         prevolution_battle_name = self.battle_name

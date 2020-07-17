@@ -1,11 +1,11 @@
 from main_loop import MainLoop
-from person import Player
+from person import *
 from pokemon import Pokemon
 from location_loops import *
 
 p = Player("Will")
 player_poke = Pokemon("Weedle", name = "Pip", level = 6)
-player_poke.level_up()
+# player_poke.level_up()
 # stored_poke1 = Pokemon("Metagross", level = 72)
 # stored_poke2 = Pokemon("Bulbasaur", name = "Paul", level = 14)
 # stored_poke3 = Pokemon("Sentret", name = "Graham", level = 9)
@@ -27,4 +27,4 @@ player_poke.level_up()
 p.add_pokemon(player_poke)
 # wild_poke = Pokemon("Rattata", level = 5)
 # p.add_pokemon(stored_pokes, to = "storage")
-# MainLoop(p)
+DoGym(p)

@@ -36,14 +36,10 @@ class TakeTurn():
         print("")
         dprint("Alternatively you could...")
         print("")
-        dprint(["(D)",
-            "See detailed move information"])
-        dprint(["(B)",
-            "Rummage in bag"])
-        dprint(["(S)",
-            "Switch Pokemon"])
-        dprint(["(F)",
-            "Attempt to flee"])
+        print("(D) See detailed move information")
+        print("(B) Rummage in bag")
+        print("(S) Switch Pokemon")
+        print("(F) Attempt to flee")
         print("")
         choice_mapping.update({
         "d": "See detailed move information",
@@ -110,7 +106,7 @@ class TakeTurn():
     def attempt_to_flee(escapee, guard):
         if escapee.get_stat("speed") > guard.get_stat("speed"): # Player Pokemon is faster than opposing Pokemon
             dprint("{} fled!".format(escapee.battle_name))
-            escapee.flee()
+            return True
         else: # Player Pokemon is slower than opposing Pokemon
             A = escapee.get_stat("speed")
             B = guard.get_stat("speed")
@@ -119,7 +115,6 @@ class TakeTurn():
             randnum = random.randint(0, 255)
             if randnum < F:
                 dprint("{} fled!".format(escapee.battle_name))
-                escapee.flee()
                 return True
             else:
                 dprint("{} tried to flee, but was caught in the act!".format(escapee.battle_name))

@@ -1,4 +1,4 @@
-from funcs import dprint, inclusive_range
+from funcs import dprint, inclusive_range, options_from_dict
 from numpy.random import choice
 import random
 from pokemon import Pokemon
@@ -62,13 +62,13 @@ class DoLocation():
         print("·" * 62)
         for key, value in self.action_options.items():
             if key.isnumeric():
-                dprint("({}) {}".format(key, value["display_text"]))
+                print("({}) {}".format(key, value["display_text"]))
         print("")
         dprint("Generic options")
         print("·" * 62)
         for key, value in self.action_options.items():
             if not key.isnumeric():
-                dprint("({}) {}".format(key, value["display_text"]))
+                print("({}) {}".format(key, value["display_text"]))
         print("")
         while True:
             choice = input().upper()
@@ -363,32 +363,57 @@ class DoGym(DoLocation):
         self.initiate_unique_functions()
         self.unique_actions = {
             "1": {
-                "display_text": "Bug gym",
+                "display_text": "Bug Gym",
                 "function": bug_gym
             }
         }
         DoLocation.__init__(self, player)
 
+    def initiate_trainer(trainer_name, pokemon):
+        trainer = NPC(trainer_name)
+        for poke in pokemon:
+            poke_name = poke[0]
+            poke_level = random.randint(poke[1][0], poke[1][1])
+            poke_object = Pokemon(poke_name, level = poke_level)
+            trainer.add_pokemon(poke_object)
+
+        trainer.party.sort(key = lambda x: x.total_stat)
+        total_stats = np.sum([pokemon.total_stat for pokemon in trainer.party])
+        divisor = 15 # random.randint(15, 20)
+        bounty = int(total_stats / divisor)
+        trainer.bounty = bounty
+        return trainer
+
     def initiate_unique_functions(self):
         global bug_gym
         def bug_gym(player):
-            trainer1 = NPC("Calico", bounty = 50)
-            pokemon_names = [
-                "Butterfree",
-                # "Beedrill",
-                # "Parasect",
-                # "Venomoth"
-            ]
-            random.shuffle(pokemon_names)
-            min_level, max_level = 20, 25
-            for pokemon_name in pokemon_names:
-                pokemon = Pokemon(pokemon_name, level = random.randint(min_level, max_level))
-                trainer1.add_pokemon(pokemon)
-            final_pokemon = Pokemon("Scyther", level = 30)
-            trainer1.add_pokemon(final_pokemon)
-            # trainers.update({"1": trainer1})
-            Battle_Trainer(player, trainer1)
-            # Sessid, Carabus
+            viola = DoGym.initiate_trainer("Viola",
+                [["Caterpie", [4, 5]], ["Paras", [6, 9]], ["Surskit", [5, 8]]])
+            gnathan = DoGym.initiate_trainer("Gnathan",
+                [["Nincada", [8, 12]], ["Weedle", [6, 8]], ["Wurmple", [5, 6]]])
+            crick = DoGym.initiate_trainer("Crick",
+                [["Ledyba", [8, 10]], ["Pineco", [9, 13]], ["Spinarak", [11, 14]]])
+            wiggy = DoGym.initiate_trainer("Wiggy",
+                [["Anorith", [10, 14]], ["Venonat", [12, 15]], ["Illumise", [13, 14]]])
+            entabi = DoGym.initiate_trainer("Entabi",
+                [["Dustox", [16, 20]], ["Masquerain", [22, 24]], ["Volbeat", [15, 16]], ["Yanma", [14, 19]]])
+            calico = DoGym.initiate_trainer("Calico",
+                [["Butterfree", [18, 22]], ["Parasect", [24, 25]], ["Scyther", [23, 28]], ["Shuckle", [19, 23]]])
+            sessid = DoGym.initiate_trainer("Sessid",
+                [["Heracross", [22, 27]], ["Ledian", [18, 24]], ["Pinsir", [25, 31]], ["Scizor", [30, 36]], ["Venomoth", [31, 33]]])
+            carabus = DoGym.initiate_trainer("Carabus",
+                [["Ariados", [27, 33]], ["Armaldo", [40, 42]], ["Beautifly", [25, 32]], ["Beedrill", [25, 32]], ["Forretress", [34, 38]], ["Ninjask", [30, 35]]])
+            trainer_dict = {}
+            i = 0
+            for var, trainer_obj in list(locals().items()):
+                if var not in ["player", "trainer_dict", "i"]:
+                    i += 1
+                    inner_key = "{:12} (Difficulty: {})".format(trainer_obj.name, trainer_obj.bounty)
+                    inner_value = "Battle_Trainer(player, {})".format(var)
+                    trainer_dict.update({str(i): {inner_key: inner_value}})
+            dprint("Which trainer would you like to battle?")
+            eval(options_from_dict(trainer_dict))
+
 
 
 

@@ -12,11 +12,24 @@ speeds = {
 speed = speeds["Medium-fast"]
 speeds_reverse_mapping = {v: k for k, v in speeds.items()}
 
+verbose = False
+def verbosity_setup():
+    global verbose
+    dprint("Press \"V\" for high verbosity, or \"v\" for low verbosity.")
+    user_input = input()
+    if user_input == "V":
+        dprint("You selected \"high verbosity\". Congratulations - a truly magnificent choice!")
+        verbose = True
+    elif user_input == "v":
+        dprint("Verbosity set to \"low\".")
+        verbose = False
+    return verbose
+
 def dprint_setup():
     global speed
     dprint("How fast do you want text to appear? (Speed is currently set to {})".format(speeds_reverse_mapping[speed]))
     for i, speed_key in enumerate(speeds.keys()):
-        dprint("({}) {}".format(i + 1, speed_key))
+        print("({}) {}".format(i + 1, speed_key))
     while True:
         user_input = input()
         try:
@@ -55,3 +68,17 @@ def final_comma_ampersand(l):
 
 def inclusive_range(num1, num2):
     return list(range(num1, num2 + 1))
+
+def options_from_dict(dict):
+    for outer_key, outer_dict in dict.items():
+        for inner_key in outer_dict.keys():
+            dprint("({}) {}".format(outer_key, inner_key))
+    while True:
+        user_input = input()
+        try:
+            selection = list(dict[user_input].keys())[0]
+            dprint("You selected {}.".format(selection))
+            return dict[user_input][selection]
+        except:
+            dprint("Invalid input detected.")
+        input()

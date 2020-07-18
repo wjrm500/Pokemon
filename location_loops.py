@@ -1,8 +1,8 @@
-from funcs import dprint, inclusive_range, options_from_dict
+from funcs import dprint, inclusive_range, get_user_input
 from numpy.random import choice
 import random
 from pokemon import Pokemon
-from battle import *
+import battle
 from person import *
 import pdb
 from save_game import *
@@ -162,7 +162,8 @@ class DoGrass(DoLocation):
                 )[0]
             level_found = random.choice(DoGrass.pokemon[species_found]["levels"])
             wild_pokemon = Pokemon(species = species_found, level = level_found)
-            Battle_Wild_Pokemon(player, wild_pokemon)
+            pdb.set_trace()
+            battle.Battle_Wild_Pokemon(player, wild_pokemon)
 
 class DoPokemonCentre(DoLocation):
     """ IDEAS
@@ -376,12 +377,7 @@ class DoGym(DoLocation):
             poke_level = random.randint(poke[1][0], poke[1][1])
             poke_object = Pokemon(poke_name, level = poke_level)
             trainer.add_pokemon(poke_object)
-
         trainer.party.sort(key = lambda x: x.total_stat)
-        total_stats = np.sum([pokemon.total_stat for pokemon in trainer.party])
-        divisor = 15 # random.randint(15, 20)
-        bounty = int(total_stats / divisor)
-        trainer.bounty = bounty
         return trainer
 
     def initiate_unique_functions(self):
@@ -408,11 +404,11 @@ class DoGym(DoLocation):
             for var, trainer_obj in list(locals().items()):
                 if var not in ["player", "trainer_dict", "i"]:
                     i += 1
-                    inner_key = "{:12} (Difficulty: {})".format(trainer_obj.name, trainer_obj.bounty)
-                    inner_value = "Battle_Trainer(player, {})".format(var)
+                    inner_key = "{:12} (Difficulty: {})".format(trainer_obj.name, trainer_obj.difficulty)
+                    inner_value = "battle.Battle_trainer(player, {})".format(var)
                     trainer_dict.update({str(i): {inner_key: inner_value}})
             dprint("Which trainer would you like to battle?")
-            eval(options_from_dict(trainer_dict))
+            eval(get_user_input(trainer_dict, first_word_select = True))
 
 
 

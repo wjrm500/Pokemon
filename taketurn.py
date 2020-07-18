@@ -16,23 +16,7 @@ class TakeTurn():
         attacking_pokemon = attacking_player.active_pokemon
         dprint("Your Lv. {} {} has the following {} moves...".format(attacking_pokemon.level, attacking_pokemon.species, len(attacking_pokemon.moves)))
         print("")
-        nums = list(range(1, 5))
-        nums.reverse()
-        max_move_len = len(max(attacking_pokemon.moves.keys(), key = len))
-        max_type_len = len(max([move_details[move]["move_type"] for move in attacking_pokemon.moves.keys()], key = len))
-        max_category_len = len(max([move_details[move]["category"] for move in attacking_pokemon.moves.keys()], key = len))
-        max_power_len = len(max([move_details[move]["power"] for move in attacking_pokemon.moves.keys()], key = len))
-        max_accuracy_len = len(max([move_details[move]["accuracy"] for move in attacking_pokemon.moves.keys()], key = len))
-        choice_mapping = {}
-        for index, (move, pp) in enumerate(attacking_pokemon.moves.items()):
-            print("({})".format(nums.pop()),
-                move.ljust(max_move_len),
-                "      Type: ", move_details[move]["move_type"].ljust(max_type_len),
-                "      Category: ", move_details[move]["category"].ljust(max_category_len),
-                "      Power: ", move_details[move]["power"].ljust(max_power_len),
-                "      Accuracy: ", move_details[move]["accuracy"].ljust(max_accuracy_len),
-                "      PP left: ", attacking_pokemon.moves[move]["temp"], "/", attacking_pokemon.moves[move]["perm"])
-            choice_mapping[str(index + 1)] = list(attacking_pokemon.moves.keys())[index]
+        choice_mapping = attacking_pokemon.display_moves()
         print("")
         dprint("Alternatively you could...")
         print("")

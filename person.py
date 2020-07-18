@@ -183,9 +183,37 @@ class Player(Person):
         self.switch_pokemon(battle, type = "enforced")
 
 class NPC(Person):
-    def __init__(self, name, bounty = 25):
+    def __init__(self, name):
         super().__init__(name)
-        self.bounty = bounty
+        self.bounty_difficulty_calc()
+
+    def bounty_difficulty_calc(self):
+        self.total_stat = np.sum([pokemon.total_stat for pokemon in self.party])
+        self.bounty = int(self.total_stat / 5)
+        if self.total_stat >= 7500:
+            self.difficulty = "Mythical"
+        elif self.total_stat >= 5000:
+            self.difficulty = "Legendary"
+        elif self.total_stat >= 3750:
+            self.difficulty = "Near-legendary"
+        elif self.total_stat >= 2500:
+            self.difficulty = "Extremely strong"
+        elif self.total_stat >= 1500:
+            self.difficulty = "Very strong"
+        elif self.total_stat >= 1000:
+            self.difficulty = "Strong"
+        elif self.total_stat >= 750:
+            self.difficulty = "Weak"
+        elif self.total_stat >= 500:
+            self.difficulty = "Very weak"
+        elif self.total_stat >= 250:
+            self.difficulty = "Extremely weak"
+        else:
+            self.difficulty = "Woeful"
+
+    def add_pokemon(self, pokemon, to = "party"):
+        Person.add_pokemon(self, pokemon, to = "party")
+        self.bounty_difficulty_calc()
 
     def speak(self, words):
         dprint("{}: \"{}\"".format(self.name, words))

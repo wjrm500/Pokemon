@@ -15,6 +15,7 @@ def save_game(player):
     with open("Storage/{}/player.pickle".format(player.name), "wb") as f:
         pickle.dump(player, f)
     dprint("{} saved the game.".format(player.name))
+    input()
 
 def exit_to_main_menu(player):
     dprint("{} exited to the main menu.".format(player.name))
@@ -24,5 +25,4 @@ def exit_to_main_menu(player):
 
 def save_game_and_exit_to_main_menu(player):
     save_game(player)
-    input()
     exit_to_main_menu(player)

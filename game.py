@@ -1,4 +1,4 @@
-from funcs import dprint, verbosity_setup, dprint_setup
+from funcs import dprint, verbosity_setup, dprint_setup, exp_gain_setup
 import pickle
 import os
 import pdb
@@ -130,6 +130,9 @@ def settings():
             },
         "2": {
             "Text speed": dprint_setup
+        },
+        "3": {
+            "Experience gain speed": exp_gain_setup
         }
     }
     for outer_key, dict in settings.items():
@@ -139,7 +142,7 @@ def settings():
         user_input = input()
         try:
             selection = list(settings[user_input].keys())[0]
-            dprint("You selected {}.".format(selection))
+            dprint("You selected \"{}\".".format(selection))
             settings[user_input][selection]()
         except:
             dprint("Invalid input detected.")

@@ -1,6 +1,6 @@
 from pokemon_csv import base_stats, natures, exp_by_level, growth_patterns, types, type_effectiveness, exp_yield, evolutions
 from pokemon_stat_calc import StatCalculator
-from funcs import dprint
+from funcs import dprint, get_user_input, exp_gain_speed
 import random
 import pickle
 import string
@@ -9,6 +9,7 @@ from taketurn import TakeTurn
 from bars import exp_bar
 import time
 import pdb
+# from importlib import reload
 
 pickle_in = open("moves_by_level.pickle", "rb")
 moves_by_level = pickle.load(pickle_in)
@@ -43,6 +44,7 @@ class Pokemon():
         self.exp_next_level = 0 if self.level == 100 else exp_by_level.loc[self.level + 1, self.growth_pattern]
         self.types = [x.capitalize() for x in list(types.loc[self.species]) if str(x) != "nan"]
         self.fainted = False
+        self.rejected_moves = []
         self.guarantee_attacking_move()
 
     def take_name(self, name):
@@ -54,8 +56,36 @@ class Pokemon():
             if key != "hp":
                 self.stats[key]["temp"] = self.stats[key]["perm"]
 
+    def display_moves(self, new_move = None):
+        nums = list(range(1, 5))
+        nums.reverse()
+        max_move_len = len(max(self.moves.keys(), key = len))
+        max_type_len = len(max([move_details[move]["move_type"] for move in self.moves.keys()], key = len))
+        max_category_len = len(max([move_details[move]["category"] for move in self.moves.keys()], key = len))
+        max_power_len = len(max([move_details[move]["power"] for move in self.moves.keys()], key = len))
+        max_accuracy_len = len(max([move_details[move]["accuracy"] for move in self.moves.keys()], key = len))
+        choice_mapping = {}
+        if new_move is not None:
+            print("({})".format(nums.pop()),
+                new_move.ljust(max_move_len),
+                "      Type: ", move_details[new_move]["move_type"].ljust(max_type_len),
+                "      Category: ", move_details[new_move]["category"].ljust(max_category_len),
+                "      Power: ", move_details[new_move]["power"].ljust(max_power_len),
+                "      Accuracy: ", move_details[new_move]["accuracy"].ljust(max_accuracy_len),
+                "      PP: ", move_details[new_move]["pp"])
+        else:
+            for i, (move, pp) in enumerate(self.moves.items()):
+                print("({})".format(nums.pop()),
+                    move.ljust(max_move_len),
+                    "      Type: ", move_details[move]["move_type"].ljust(max_type_len),
+                    "      Category: ", move_details[move]["category"].ljust(max_category_len),
+                    "      Power: ", move_details[move]["power"].ljust(max_power_len),
+                    "      Accuracy: ", move_details[move]["accuracy"].ljust(max_accuracy_len),
+                    "      PP left: ", self.moves[move]["temp"], "/", self.moves[move]["perm"])
+                choice_mapping[str(i + 1)] = list(self.moves.keys())[i]
+            return choice_mapping
+
     def guarantee_attacking_move(self): # Generate a set of moves for the Pokemon
-        # TODO: What if there is no attacking move e.g. Kakuna
         df = moves_by_level[self.species] # Bring in moves learnt by level for particular species
         df = df[df["level"] <= self.level].copy() # Only look at moves possible at Pokemon's level
         def damage_dealing(move): # Function to create a filtered dataframe containing only damage-dealing moves
@@ -73,6 +103,60 @@ class Pokemon():
             self.moves = {move: int(move_details[move]["pp"]) for move in list(moves_by_level[self.species]["move"])}
         for key, value in self.moves.items():
             self.moves[key] = {"temp": value, "perm": value}
+        ### Add to rejected moves
+        for index, row in df.iterrows():
+            if row["move"] not in self.moves.keys():
+                self.rejected_moves.append(row["move"])
+
+    def new_move_protocol(self):
+        global loop_break
+        loop_break = False
+        def learn_move(pokemon, prospective_move):
+            global loop_break
+            if len(self.moves) == 4:
+                dprint("{} already has 4 moves. Which move would you like to remove?".format(pokemon.battle_name))
+                choice_mapping = pokemon.display_moves()
+                print("")
+                print("(X) Retain existing moves")
+                user_input = input()
+                if user_input.lower() == "x":
+                    loop_break = True
+                    return
+                elif user_input in ["1", "2", "3", "4"]:
+                    move_to_delete = choice_mapping[user_input]
+                    del self.moves[move_to_delete]
+                    dprint("You removed {} from your {}'s moveset.".format(move_to_delete, pokemon.species))
+                else:
+                    loop_break = False
+                    return
+            self.moves.update({prospective_move: int(move_details[prospective_move]["pp"])})
+            prospective_move_pp = self.moves[prospective_move]
+            self.moves[prospective_move] = {"temp": prospective_move_pp, "perm": prospective_move_pp}
+            dprint("You added {} to your {}'s moveset.".format(prospective_move, pokemon.species))
+            loop_break = True
+        def discover_more(prospective_move):
+            self.display_moves(new_move = prospective_move)
+            dprint(move_details[prospective_move]["effect"])
+            input()
+        def reject_move(prospective_move):
+            self.rejected_moves.append(prospective_move)
+        df = moves_by_level[self.species]
+        try:
+            for index, item in df[df["level"] <= self.level]["move"].iteritems():
+                loop_break = False
+                prospective_move = item
+                if prospective_move not in self.moves.keys() and prospective_move not in rejected_moves:
+                    dprint("{} can now learn {}.".format(self.battle_name, prospective_move))
+                    while not loop_break:
+                        dprint("What would you like to do?")
+                        options_dict = {
+                            "1": {"Learn {}".format(prospective_move): "learn_move(self, prospective_move)"},
+                            "2": {"Find out more about {}".format(prospective_move): "discover_more(prospective_move)"},
+                            "3": {"Reject {}".format(prospective_move): "reject_move(prospective_move)"}
+                        }
+                        eval(get_user_input(options_dict))
+        except:
+            pass
 
     def get_stat(self, stat, type = "temp"):
         return self.stats[stat][type]
@@ -123,7 +207,7 @@ class Pokemon():
         b = opposing_pokemon.base_exp_yield
         l = opposing_pokemon.level
         s = participants
-        exp_gain = int((a * b * l) / (7 * s))
+        exp_gain = int((a * b * l) / (7 * s)) * exp_gain_speed
         dprint("{} gained {:,} experience.".format(self.battle_name, exp_gain))
         exp_bar(self, exp_gain)
         self.exp += exp_gain
@@ -136,9 +220,12 @@ class Pokemon():
     def level_up(self):
         self.level += 1
         dprint("{} went from Lv. {} to Lv. {}!".format(self.battle_name, self.level - 1, self.level))
-        if self.level >= evolutions.loc[self.species, "level"]:
-            self.evolve()
-        self.guarantee_attacking_move()
+        try:
+            if self.level >= evolutions.loc[self.species, "level"]:
+                self.evolve()
+        except:
+            pass
+        self.new_move_protocol()
         self.exp_next_level = exp_by_level.loc[self.level + 1, self.growth_pattern]
         remaining_health_pct = self.get_stat("hp") / self.get_stat("hp", type = "perm")
         self.stats = StatCalculator(self.level, self.ivs, self.nature, self.base_stats)

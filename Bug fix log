@@ -58,3 +58,15 @@ don't think fleeing works
 should not be able to switch fainted pokemon into active pokemon slot
 once a trainer has been initiated, should they stay the same?
 add full restore
+
+saying pokemon went from one lev to another when they did not
+fixed issue with fully evolved pokemon not levelling up
+pp currently restored on level up
+kakuna and metapod guaranteed move works
+added in ability to learn moves on level up (new_move_protocol function)
+add fast exp gain to settings
+weedle did not try to learn harden when it evolved - fixed!
+fixed issue with pokemon trying to learn all moves again
+fixed issue with pokemon search - something to do with imports
+
+npc to teach previously rejected moves

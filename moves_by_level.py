@@ -60,6 +60,11 @@ for index, species in enumerate(species_list):
 
 all_moves = list(set([move for moves in all_moves for move in moves]))
 
+moves_by_level["Nidoran♀"] = moves_by_level.pop("nidoran-f")
+moves_by_level["Nidoran♂"] = moves_by_level.pop("nidoran-m")
+moves_by_level["Farfetch'd"] = moves_by_level.pop("farfetchd")
+moves_by_level["Mr. Mime"] = moves_by_level.pop("mr-mime")
+
 pickle_out = open("moves_by_level.pickle", "wb")
 pickle.dump(moves_dict, pickle_out)
 pickle_out.close()
